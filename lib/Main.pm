@@ -300,10 +300,14 @@ my $Platforms = {
         $json->{name} = 'test';
         $json->{on}->{push} = {};
         
-        $json->{jobs}->{test} = {
+        my $job = $json->{jobs}->{test} = {
           'runs-on' => 'ubuntu-latest',
           steps => [@$build_steps, @$test_steps],
         };
+
+        unshift @{$job->{steps}},
+            {"uses" => 'actions/checkout@v2'};
+        
         if (defined $input->{_perl_versions}) {
           $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
             {perl_version => $_};
@@ -321,13 +325,13 @@ my $Platforms = {
         $json->{on}->{push} = {};
 
         my $job = $json->{jobs}->{'deploy_github_' . $branch_name} = {
-          if => '${{ github.ref == "refs/heads/'.$branch_name.'" }}',
+          if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
           'runs-on' => 'ubuntu-latest',
           steps => [map { github_step $_ } @{$input->{_branch_github_deploy_jobs}->{$branch_name} or []}],
         };
 
         if (defined $json->{jobs}->{test}) {
-          push @{$job->{need} ||= []}, 'test';
+          push @{$job->{needs} ||= []}, 'test';
         }
 
         ## <https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idpermissions>
@@ -344,10 +348,13 @@ my $Platforms = {
         $json->{on}->{schedule} = [{cron => "$minute $hour * *"}];
 
         my $job = $json->{jobs}->{'batch_github_' . $branch_name} = {
-          if => '${{ github.ref == "refs/heads/'.$branch_name.'" }}',
+          if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
           'runs-on' => 'ubuntu-latest',
           steps => [map { github_step $_ } @{$input->{_branch_github_batch_jobs}->{$branch_name} or []}],
         };
+
+        unshift @{$job->{steps}},
+            {"uses" => 'actions/checkout@v2'};
       }
 
       return $output;
@@ -450,8 +457,7 @@ $Options->{'github', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
-          'git rev-parse HEAD > head.txt',
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY:/\\//%2F} -X POST';
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY:/\\//%2F} -X POST';
     } # $branch
   },
 };
