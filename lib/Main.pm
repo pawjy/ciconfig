@@ -364,8 +364,6 @@ my $Platforms = {
 
         unshift @{$job->{steps}},
             {"uses" => 'actions/checkout@v2'};
-        
-        $job->{permissions}->{contents} = 'write';
       }
 
       return $output;
@@ -720,6 +718,10 @@ $Options->{'github', 'gaa'} = {
     push @{$json->{_branch_github_batch_jobs}->{master} ||= []},
         'git config --global user.email "temp@github.test"',
         'git config --global user.name "GitHub Actions"',
+        {
+          "run" => 'git config --replace-all url.https://$GH_ACCESS_TOKEN@github.com/.pushInsteadOf https://github.com/',
+          secrets => ['GH_ACCESS_TOKEN'],
+        },
         "make deps",
         "make updatenightly",
         "git diff-index --quiet HEAD --cached || git commit -m auto",

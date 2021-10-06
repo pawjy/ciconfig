@@ -1585,11 +1585,14 @@ for (
     jobs => {batch_github_master => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
         {uses => 'actions/checkout@v2'},
         {run => 'git config --global user.email "temp@github.test"'},
         {run => 'git config --global user.name "GitHub Actions"'},
+        {
+          "run" => 'git config --replace-all url.https://$GH_ACCESS_TOKEN@github.com/.pushInsteadOf https://github.com/',
+          env => {GH_ACCESS_TOKEN => '${{ secrets.GH_ACCESS_TOKEN }}'},
+        },
         {run => 'make deps'},
         {run => 'make updatenightly'},
         {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
