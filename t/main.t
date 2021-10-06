@@ -1561,10 +1561,27 @@ for (
       ],
     }},
   }}}],
+  [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
+    name => 'cron',
+    on => {schedule => [{cron => '2 13 * *'}]},
+    jobs => {batch_github_master => {
+      if => '${{ github.ref == "refs/heads/master" }}',
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {run => 'git config --global user.email "temp@github.test"'},
+        {run => 'git config --global user.name "GitHub Actions"'},
+        {run => 'make deps'},
+        {run => 'make updatenightly'},
+        {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
+        {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
+      ],
+    }},
+  }}}],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml
-          .github/workflows/test.yml)) {
+          .github/workflows/test.yml
+          .github/workflows/cron.yml)) {
     $expected->{$_} ||= {remove => 1};
   }
   test {
