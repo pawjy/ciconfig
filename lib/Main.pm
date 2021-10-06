@@ -73,6 +73,11 @@ sub circle_step ($;%) {
   return {$type => $v};
 } # circle_step
 
+sub github_step ($) {
+  my $input = shift;
+  return {run => $input};
+} # github_step
+
 my $Platforms = {
   travisci => {
     file => '.travis.yml',
@@ -268,7 +273,75 @@ my $Platforms = {
     set => sub {
     },
   },
-};
+  github => {
+    to_json_files => sub {
+      my $input = shift;
+      my $output = {};
+
+      ## <https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions>
+
+      my $test_steps = [];
+      for my $key (sort { $a cmp $b } keys %{$input->{_test_steps}}) {
+        for (@{$input->{_test_steps}->{$key}}) {
+          push @$test_steps, github_step $_;
+        }
+      }
+
+      my $build_steps = [];
+      for my $key (sort { $a cmp $b } keys %{$input->{_build_steps}}) {
+        for (@{$input->{_build_steps}->{$key}}) {
+          push @$build_steps, github_step $_;
+        }
+      }
+      
+      if (@$test_steps) {
+        ## has similar
+        my $json = $output->{'.github/workflows/test.yml'} = {};
+        $json->{name} = 'test';
+        $json->{on}->{push} = {};
+        
+        $json->{jobs}->{test} = {
+          'runs-on' => 'ubuntu-latest',
+          steps => [@$build_steps, @$test_steps],
+        };
+        if (defined $input->{_perl_versions}) {
+          $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
+            {perl_version => $_};
+          } @{$input->{_perl_versions}}];
+          $json->{jobs}->{test}->{env}->{PMBP_PERL_VERSION} = '${{ matrix.perl_version }}';
+        }
+      } elsif (@$build_steps) {
+        die "There are no test steps while there are build steps";
+      }
+
+      for my $branch_name (keys %{$input->{_branch_github_deploy_jobs} or {}}) {
+        ## has similar
+        my $json = $output->{'.github/workflows/test.yml'} ||= {};
+        $json->{name} = 'test';
+        $json->{on}->{push} = {};
+
+        my $job = $json->{jobs}->{'deploy_github_' . $branch_name} = {
+          if => '${{ github.ref == "refs/heads/'.$branch_name.'" }}',
+          'runs-on' => 'ubuntu-latest',
+          steps => [map { github_step $_ } @{$input->{_branch_github_deploy_jobs}->{$branch_name} or []}],
+        };
+
+        if (defined $json->{jobs}->{test}) {
+          push @{$job->{need} ||= []}, 'test';
+        }
+
+        ## <https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idpermissions>
+        ## <https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token>
+        $job->{permissions}->{contents} = 'write';
+      }
+
+      return $output;
+    },
+    possible_files => [
+      '.github/workflows/test.yml',
+    ],
+  },
+}; # $Platforms
 
 my $Options = {};
 
@@ -279,22 +352,48 @@ $Options->{'travisci', 'empty'} = {
   },
 };
 
+my $PerlVersions = {
+  latest  => [qw(latest)],
+  1       => [qw(latest 5.14 5.8)],
+  '5.8+'  => [qw(latest 5.14 5.8)],
+  '5.12+' => [qw(latest 5.14 5.12)],
+  '5.10+' => [qw(latest 5.14 5.10)],
+  '5.14+' => [qw(latest 5.14)],
+};
+my $LatestPerlVersion = '5.32';
+
 $Options->{'travisci', 'pmbp'} = {
   set => sub {
     return unless $_[1];
     $_[0]->{git}->{submodules} = \0;
     $_[0]->{language} = 'perl';
-    $_[0]->{perl} = {
-      latest  => [qw(5.32)],
-      1       => [qw(5.32 5.14 5.8)],
-      '5.8+'  => [qw(5.32 5.14 5.8)],
-      '5.12+' => [qw(5.32 5.14 5.12)],
-      '5.10+' => [qw(5.32 5.14 5.10)],
-      '5.14+' => [qw(5.32 5.14)],
-    }->{$_[1]} || die "Unknown |pmbp| value |$_[1]|";
+    $_[0]->{perl} = [map { $_ eq 'latest' ? $LatestPerlVersion : $_ } @{$PerlVersions->{$_[1]} || die "Unknown |pmbp| value |$_[1]|"}];
     $_[0]->{before_install} = 'true';
     $_[0]->{install} = 'make test-deps';
     $_[0]->{script} = 'make test';
+  },
+};
+
+$Options->{'github', 'pmbp'} = {
+  set => sub {
+    return unless $_[1];
+    my $json = $_[0];
+    $_[0]->{_perl_versions} = $PerlVersions->{$_[1]} || die "Unknown |pmbp| value |$_[1]|";
+    push @{$json->{_build_steps}->{pmbp} ||= []}, 'make test-deps';
+    push @{$json->{_test_steps}->{pmbp} ||= []}, 'make test';
+  },
+};
+
+$Options->{'circleci', 'pmbp'} = {
+  set => sub {
+    return unless $_[1];
+    my $json = $_[0];
+    push @{$json->{_build} ||= []}, 'make test-deps';
+    if (defined $json->{_build_generated_files}) {
+      push @{$json->{_test_jobs}->{pmbp} ||= []}, 'make test';
+    } else {
+      push @{$json->{_test} ||= []}, 'make test';
+    }
   },
 };
 
@@ -324,6 +423,39 @@ $Options->{'travisci', 'merger'} = {
   },
 };
 
+$Options->{'github', 'merger'} = {
+  set => sub {
+    my $json = $_[0];
+    return unless $_[1];
+    my $into = 'master';
+    if (ref $_[1] eq 'HASH') {
+      $into = $_[1]->{into} if defined $_[1]->{into};
+    }
+    for my $branch (qw(staging nightly)) {
+      ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
+      push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
+          'git rev-parse HEAD > head.txt',
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY:/\\//%2F} -X POST';
+    } # $branch
+  },
+};
+
+$Options->{'circleci', 'merger'} = {
+  set => sub {
+    my $json = $_[0];
+    return unless $_[1];
+    my $into = 'master';
+    if (ref $_[1] eq 'HASH') {
+      $into = $_[1]->{into} if defined $_[1]->{into};
+    }
+    for my $branch (qw(staging nightly)) {
+      push @{$json->{_deploy_jobs}->{$branch} ||= []}, join "\n",
+          'git rev-parse HEAD > head.txt',
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $CIRCLE_BRANCH into '.$into.'\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST';
+    } # $branch
+  },
+};
+
 $Options->{'circleci', 'heroku'} = {
   set => sub {
     return unless $_[1];
@@ -341,19 +473,6 @@ $Options->{'circleci', 'heroku'} = {
         'git push git@heroku.com:'.($def->{app_name} || '$HEROKU_APP_NAME').'.git +`git rev-parse HEAD`:refs/heads/master',
         @{ref $def->{pushed} eq 'ARRAY' ? $def->{pushed} : []},
     ;
-  },
-};
-
-$Options->{'circleci', 'pmbp'} = {
-  set => sub {
-    return unless $_[1];
-    my $json = $_[0];
-    push @{$json->{_build} ||= []}, 'make test-deps';
-    if (defined $json->{_build_generated_files}) {
-      push @{$json->{_test_jobs}->{pmbp} ||= []}, 'make test';
-    } else {
-      push @{$json->{_test} ||= []}, 'make test';
-    }
   },
 };
 
@@ -495,22 +614,6 @@ $Options->{'circleci', 'deploy_branch'} = {
   },
 };
 
-$Options->{'circleci', 'merger'} = {
-  set => sub {
-    my $json = $_[0];
-    return unless $_[1];
-    my $into = 'master';
-    if (ref $_[1] eq 'HASH') {
-      $into = $_[1]->{into} if defined $_[1]->{into};
-    }
-    for my $branch (qw(staging nightly)) {
-      push @{$json->{_deploy_jobs}->{$branch} ||= []}, join "\n",
-          'git rev-parse HEAD > head.txt',
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $CIRCLE_BRANCH into '.$into.'\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST';
-    } # $branch
-  },
-};
-
 $Options->{'circleci', 'awscli'} = {
   set => sub {
     return unless $_[1];
@@ -593,15 +696,26 @@ sub generate ($$$;%) {
       $o_def->{set}->($json, $o_param, $root_path);
     } # $opt
 
-    $p_def->{set}->($json);
-
-    $data->{$p_def->{file}} = {json => $json};
-  }
+    if (defined $p_def->{to_json_files}) {
+      my $files = $p_def->{to_json_files}->($json);
+      for my $file_name (keys %$files) {
+        $data->{$file_name} = {json => $files->{$file_name}};
+      }
+    } else {
+      $p_def->{set}->($json);
+      $data->{$p_def->{file}} = {json => $json};
+    }
+  } # $platform
 
   for my $platform (sort { $a cmp $b } keys %$Platforms) {
     my $p_def = $Platforms->{$platform};
-    $data->{$p_def->{file}} ||= {remove => 1};
-  }
+    if (defined $p_def->{file}) {
+      $data->{$p_def->{file}} ||= {remove => 1};
+    }
+    for (@{$p_def->{possible_files} or []}) {
+      $data->{$_} ||= {remove => 1};
+    }
+  } # $platform
 
   return $data;
 } # generate
