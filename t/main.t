@@ -1436,9 +1436,135 @@ for (
       ],
     }, build => {jobs => ['build']}},
   }}}],
+  [{github => {pmbp => 'latest'}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      strategy => {matrix => {include => [{perl_version => 'latest'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}],
+  [{github => {pmbp => 1}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      strategy => {matrix => {include => [{perl_version => 'latest'},
+                                          {perl_version => '5.14'},
+                                          {perl_version => '5.8'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}],
+  [{github => {pmbp => '5.8+'}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      strategy => {matrix => {include => [{perl_version => 'latest'},
+                                          {perl_version => '5.14'},
+                                          {perl_version => '5.8'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}],
+  [{github => {pmbp => '5.10+'}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      strategy => {matrix => {include => [{perl_version => 'latest'},
+                                          {perl_version => '5.14'},
+                                          {perl_version => '5.10'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}],
+  [{github => {pmbp => '5.14+'}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      strategy => {matrix => {include => [{perl_version => 'latest'},
+                                          {perl_version => '5.14'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}],
+  [{github => {merger => 1}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {deploy_github_nightly => {
+      if => '${{ github.ref == "refs/heads/nightly" }}',
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      steps => [
+        {run => 'git rev-parse HEAD > head.txt'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+      ],
+    }, deploy_github_staging => {
+      if => '${{ github.ref == "refs/heads/staging" }}',
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      steps => [
+        {run => 'git rev-parse HEAD > head.txt'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+      ],
+    }},
+  }}}],
+  [{github => {pmbp => 'latest',
+               merger => 1}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      strategy => {matrix => {include => [{perl_version => 'latest'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }, deploy_github_nightly => {
+      if => '${{ github.ref == "refs/heads/nightly" }}',
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      need => ['test'],
+      steps => [
+        {run => 'git rev-parse HEAD > head.txt'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+      ],
+    }, deploy_github_staging => {
+      if => '${{ github.ref == "refs/heads/staging" }}',
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      need => ['test'],
+      steps => [
+        {run => 'git rev-parse HEAD > head.txt'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+      ],
+    }},
+  }}}],
 ) {
   my ($input, $expected, $name) = @$_;
-  for (qw(.travis.yml circle.yml .circleci/config.yml)) {
+  for (qw(.travis.yml circle.yml .circleci/config.yml
+          .github/workflows/test.yml)) {
     $expected->{$_} ||= {remove => 1};
   }
   test {
