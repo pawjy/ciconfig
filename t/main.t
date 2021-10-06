@@ -1456,8 +1456,8 @@ for (
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
-                                          {perl_version => '5.14'},
-                                          {perl_version => '5.8'}]}},
+                                          {perl_version => '5.14.2'},
+                                          {perl_version => '5.8.9'}]}},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1472,8 +1472,8 @@ for (
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
-                                          {perl_version => '5.14'},
-                                          {perl_version => '5.8'}]}},
+                                          {perl_version => '5.14.2'},
+                                          {perl_version => '5.8.9'}]}},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1488,8 +1488,8 @@ for (
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
-                                          {perl_version => '5.14'},
-                                          {perl_version => '5.10'}]}},
+                                          {perl_version => '5.14.2'},
+                                          {perl_version => '5.10.1'}]}},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1504,7 +1504,7 @@ for (
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
-                                          {perl_version => '5.14'}]}},
+                                          {perl_version => '5.14.2'}]}},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1521,14 +1521,22 @@ for (
       'runs-on' => 'ubuntu-latest',
       permissions => {contents => 'write'},
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+         env => {GITHUB_TOKEN => q<${{ secrets.GITHUB_TOKEN }}>}},
+        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
+         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
+                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
       'runs-on' => 'ubuntu-latest',
       permissions => {contents => 'write'},
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+         env => {GITHUB_TOKEN => q<${{ secrets.GITHUB_TOKEN }}>}},
+        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
+         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
+                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
       ],
     }},
   }}}],
@@ -1551,7 +1559,11 @@ for (
       permissions => {contents => 'write'},
       needs => ['test'],
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+         env => {GITHUB_TOKEN => q<${{ secrets.GITHUB_TOKEN }}>}},
+        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
+         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
+                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
@@ -1559,16 +1571,21 @@ for (
       permissions => {contents => 'write'},
       needs => ['test'],
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY:/\//%2F} -X POST'},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+         env => {GITHUB_TOKEN => q<${{ secrets.GITHUB_TOKEN }}>}},
+        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
+         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
+                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
       ],
     }},
   }}}],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
-    on => {schedule => [{cron => '2 13 * *'}]},
+    on => {schedule => [{cron => '2 13 * * *'}]},
     jobs => {batch_github_master => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
       steps => [
         {uses => 'actions/checkout@v2'},
         {run => 'git config --global user.email "temp@github.test"'},

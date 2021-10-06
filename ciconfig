@@ -2580,7 +2580,16 @@ sub circle_step ($;%) {
 
 sub github_step ($) {
   my $input = shift;
-  return {run => $input};
+  my $output = {};
+  if (ref $input) {
+    $output->{run} = $input->{run} // die "No |run|";
+    for my $name (@{$input->{secrets} or []}) {
+      $output->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+    }
+  } else {
+    $output->{run} = $input;
+  }
+  return $output;
 } # github_step
 
 my $Platforms = {
@@ -2850,7 +2859,7 @@ my $Platforms = {
         $json->{name} = 'cron';
         my $hour = int ($input->{_random_day_time} / 60);
         my $minute = ($input->{_random_day_time}) % 60;
-        $json->{on}->{schedule} = [{cron => "$minute $hour * *"}];
+        $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
 
         my $job = $json->{jobs}->{'batch_github_' . $branch_name} = {
           if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
@@ -2860,6 +2869,8 @@ my $Platforms = {
 
         unshift @{$job->{steps}},
             {"uses" => 'actions/checkout@v2'};
+        
+        $job->{permissions}->{contents} = 'write';
       }
 
       return $output;
@@ -2882,13 +2893,13 @@ $Options->{'travisci', 'empty'} = {
 
 my $PerlVersions = {
   latest  => [qw(latest)],
-  1       => [qw(latest 5.14 5.8)],
-  '5.8+'  => [qw(latest 5.14 5.8)],
-  '5.12+' => [qw(latest 5.14 5.12)],
-  '5.10+' => [qw(latest 5.14 5.10)],
-  '5.14+' => [qw(latest 5.14)],
+  1       => [qw(latest 5.14.2 5.8.9)],
+  '5.8+'  => [qw(latest 5.14.2 5.8.9)],
+  '5.12+' => [qw(latest 5.14.2 5.12.4)],
+  '5.10+' => [qw(latest 5.14.2 5.10.1)],
+  '5.14+' => [qw(latest 5.14.2)],
 };
-my $LatestPerlVersion = '5.32';
+my $LatestPerlVersion = '5.32.1';
 
 $Options->{'travisci', 'pmbp'} = {
   set => sub {
@@ -2896,6 +2907,7 @@ $Options->{'travisci', 'pmbp'} = {
     $_[0]->{git}->{submodules} = \0;
     $_[0]->{language} = 'perl';
     $_[0]->{perl} = [map { $_ eq 'latest' ? $LatestPerlVersion : $_ } @{$PerlVersions->{$_[1]} || die "Unknown |pmbp| value |$_[1]|"}];
+    s/^(\d+\.\d+)\..+$/$1/ for @{$_[0]->{perl}};
     $_[0]->{before_install} = 'true';
     $_[0]->{install} = 'make test-deps';
     $_[0]->{script} = 'make test';
@@ -2962,7 +2974,10 @@ $Options->{'github', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY:/\\//%2F} -X POST';
+          {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+           secrets => ['GITHUB_TOKEN']},
+          {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY/\\//%2F} -X POST',
+           secrets => ['BWALL_TOKEN', 'BWALL_HOST']};
     } # $branch
   },
 };
