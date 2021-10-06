@@ -2840,10 +2840,26 @@ my $Platforms = {
         $job->{permissions}->{contents} = 'write';
       }
 
+      for my $branch_name (keys %{$input->{_branch_github_batch_jobs} or {}}) {
+        ## has similar
+        my $json = $output->{'.github/workflows/cron.yml'} ||= {};
+        $json->{name} = 'cron';
+        my $hour = int ($input->{_random_day_time} / 60);
+        my $minute = ($input->{_random_day_time}) % 60;
+        $json->{on}->{schedule} = [{cron => "$minute $hour * *"}];
+
+        my $job = $json->{jobs}->{'batch_github_' . $branch_name} = {
+          if => '${{ github.ref == "refs/heads/'.$branch_name.'" }}',
+          'runs-on' => 'ubuntu-latest',
+          steps => [map { github_step $_ } @{$input->{_branch_github_batch_jobs}->{$branch_name} or []}],
+        };
+      }
+
       return $output;
     },
     possible_files => [
       '.github/workflows/test.yml',
+      '.github/workflows/cron.yml',
     ],
   },
 }; # $Platforms
@@ -3179,6 +3195,20 @@ $Options->{'circleci', 'gaa'} = {
         }
       ],
     };
+  },
+};
+
+$Options->{'github', 'gaa'} = {
+  set => sub {
+    my $json = $_[0];
+    push @{$json->{_branch_github_batch_jobs}->{master} ||= []},
+        'git config --global user.email "temp@github.test"',
+        'git config --global user.name "GitHub Actions"',
+        "make deps",
+        "make updatenightly",
+        "git diff-index --quiet HEAD --cached || git commit -m auto",
+        "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
+        ;
   },
 };
 
