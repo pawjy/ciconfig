@@ -1,9 +1,20 @@
 pawjy/ciconfig
 ~~~~~~~~~~~~~~
 
+The |ciconfig| script.
+
+* Dependency
+
+Perl 5.14 or later is required.
+
 * Author
 
 Wakaba <wakaba@suikawiki.org>.
+
+* History
+
+This repository was located at <https://github.com/wakaba/ciconfig>
+until 2 February, 2022.
 
 * License
 
