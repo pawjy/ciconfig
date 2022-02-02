@@ -1,5 +1,5 @@
 {
-  "circleci": {
+  "github": {
     "pmbp": 1,
     "merger": true,
     "gaa": true
