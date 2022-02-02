@@ -1441,7 +1441,8 @@ for (
     on => {push => {}},
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
-      strategy => {matrix => {include => [{perl_version => 'latest'}]}},
+      strategy => {matrix => {include => [{perl_version => 'latest'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1457,7 +1458,8 @@ for (
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
                                           {perl_version => '5.14.2'},
-                                          {perl_version => '5.8.9'}]}},
+                                          {perl_version => '5.8.9'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1473,7 +1475,8 @@ for (
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
                                           {perl_version => '5.14.2'},
-                                          {perl_version => '5.8.9'}]}},
+                                          {perl_version => '5.8.9'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1489,7 +1492,8 @@ for (
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
                                           {perl_version => '5.14.2'},
-                                          {perl_version => '5.10.1'}]}},
+                                          {perl_version => '5.10.1'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1504,7 +1508,8 @@ for (
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
       strategy => {matrix => {include => [{perl_version => 'latest'},
-                                          {perl_version => '5.14.2'}]}},
+                                          {perl_version => '5.14.2'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1546,7 +1551,8 @@ for (
     on => {push => {}},
     jobs => {test => {
       'runs-on' => 'ubuntu-latest',
-      strategy => {matrix => {include => [{perl_version => 'latest'}]}},
+      strategy => {matrix => {include => [{perl_version => 'latest'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},
@@ -1605,7 +1611,8 @@ for (
       strategy => {matrix => {include => [{perl_version => 'latest',
                                            os => 'ubuntu-latest'},
                                           {perl_version => 'latest',
-                                           os => 'macos-latest'}]}},
+                                           os => 'macos-latest'}]},
+                   'fail-fast' => \0},
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
       steps => [
         {uses => 'actions/checkout@v2'},

@@ -333,11 +333,13 @@ my $Platforms = {
             } @{$input->{_perl_versions}}];
           }
           $json->{jobs}->{test}->{env}->{PMBP_PERL_VERSION} = '${{ matrix.perl_version }}';
+          $json->{jobs}->{test}->{strategy}->{'fail-fast'} = \0;
         } else {
           if (delete $input->{_with_macos}) {
             $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
               {os => 'macos-latest'};
             } (undef)];
+            $json->{jobs}->{test}->{strategy}->{'fail-fast'} = \0;
           }
         }
       } elsif (@$build_steps) {
