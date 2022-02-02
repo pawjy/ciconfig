@@ -2907,15 +2907,32 @@ my $Platforms = {
           'runs-on' => 'ubuntu-latest',
           steps => [@$build_steps, @$test_steps],
         };
-
+        if ($input->{_with_macos}) {
+          $job->{'runs-on'} = '${{ matrix.os }}';
+        }
+        
         unshift @{$job->{steps}},
             {"uses" => 'actions/checkout@v2'};
         
         if (defined $input->{_perl_versions}) {
-          $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
-            {perl_version => $_};
-          } @{$input->{_perl_versions}}];
+          if (delete $input->{_with_macos}) {
+            $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [(map {
+              {perl_version => $_, os => 'ubuntu-latest'};
+            } @{$input->{_perl_versions}}), (map {
+              {perl_version => $_, os => 'macos-latest'};
+            } @{$input->{_perl_versions}})];
+          } else { # linux only
+            $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
+              {perl_version => $_};
+            } @{$input->{_perl_versions}}];
+          }
           $json->{jobs}->{test}->{env}->{PMBP_PERL_VERSION} = '${{ matrix.perl_version }}';
+        } else {
+          if (delete $input->{_with_macos}) {
+            $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
+              {os => 'macos-latest'};
+            } (undef)];
+          }
         }
       } elsif (@$build_steps) {
         die "There are no test steps while there are build steps";
@@ -3022,6 +3039,12 @@ $Options->{'circleci', 'pmbp'} = {
     } else {
       push @{$json->{_test} ||= []}, 'make test';
     }
+  },
+};
+
+$Options->{'github', 'macos'} = {
+  set => sub {
+    $_[0]->{_with_macos} = 1 if $_[1];
   },
 };
 
@@ -3368,7 +3391,7 @@ sub generate ($$$;%) {
 
 =head1 LICENSE
 
-Copyright 2018-2021 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2022 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

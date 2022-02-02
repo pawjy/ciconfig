@@ -1597,6 +1597,23 @@ for (
       ],
     }},
   }}}],
+  [{github => {pmbp => 'latest', macos => 1}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => '${{ matrix.os }}',
+      strategy => {matrix => {include => [{perl_version => 'latest',
+                                           os => 'ubuntu-latest'},
+                                          {perl_version => 'latest',
+                                           os => 'macos-latest'}]}},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {uses => 'actions/checkout@v2'},
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml
@@ -1621,7 +1638,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2018-2021 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2022 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
