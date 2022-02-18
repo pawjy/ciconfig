@@ -3,5 +3,6 @@
     "pmbp": "5.14+",
     "merger": true,
     "gaa": true
-  }
+  },
+  "circleci":{}
 }
