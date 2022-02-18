@@ -2805,9 +2805,26 @@ my $Platforms = {
         delete $json->{_test_jobs};
         delete $json->{_test};
 
-        ## Build jobs
-        $json->{workflows}->{build}->{jobs} = ['build'];
+        $json->{workflows}->{build}->{jobs} = [];
         
+        ## Deploy job executed before builds
+        for my $branch_name (sort { $a cmp $b } keys %{$json->{_soon_deploy_jobs} or {}}) {
+          my $job_name = 'soon_deploy_' . $branch_name;
+          $json->{jobs}->{$job_name} = new_job;
+          push @{$json->{jobs}->{$job_name}->{steps}},
+              'checkout',
+              map {
+                circle_step ($_, deploy => 1);
+              } @{$json->{_soon_deploy_jobs}->{$branch_name}};
+          push @{$json->{workflows}->{build}->{jobs}}, {$job_name => {
+            filters => {branches => {only => [$branch_name]}},
+            context => ['deploy-context'],
+          }};
+        }
+
+        ## Build jobs
+        push @{$json->{workflows}->{build}->{jobs}}, 'build';
+
         ## Deploy job executed after builds
         for my $branch_name (sort { $a cmp $b } keys %{$json->{_early_deploy_jobs} or {}}) {
           my $job_name = 'early_deploy_' . $branch_name;
@@ -2824,7 +2841,8 @@ my $Platforms = {
           }};
         }
         my $test_requires = ['build'];
-        if (keys %{$json->{_early_deploy_jobs} or {}}) {
+        if (keys %{$json->{_soon_deploy_jobs} or {}} or
+            keys %{$json->{_early_deploy_jobs} or {}}) {
           my $job_name = 'before_tests';
           $json->{jobs}->{$job_name} = new_job;
           push @{$json->{jobs}->{$job_name}->{steps}}, circle_step ('true');
@@ -2833,6 +2851,7 @@ my $Platforms = {
           }};
           push @$test_requires, $job_name;
         }
+        delete $json->{_soon_deploy_jobs};
         delete $json->{_early_deploy_jobs};
 
         ## Test jobs
@@ -3230,17 +3249,19 @@ $Options->{'circleci', 'make_deploy_branches'} = {
     my $has_bg = !! $_[0]->{_build_generated_files};
     for (@{$_[1]}) {
       my $branch;
+      my $buildless;
       my $testless;
       my $awscli;
       if (ref $_) {
         $branch = $_->{name};
-        $testless = $_->{testless};
+        $buildless = $_->{buildless};
+        $testless = $_->{testless} || $buildless;
         $awscli = $_->{awscli};
       } else {
         $branch = $_;
       }
       die "No |build_generated_files|" if $testless and not $has_bg;
-      push @{$_[0]->{$testless ? '_early_deploy_jobs' : $has_bg ? '_deploy_jobs' : '_deploy'}->{$branch} ||= []},
+      push @{$_[0]->{$testless ? $buildless ? '_soon_deploy_jobs' : '_early_deploy_jobs' : $has_bg ? '_deploy_jobs' : '_deploy'}->{$branch} ||= []},
           ($awscli ? {awscli => 1} : ()),
           "make deploy-$branch";
     }

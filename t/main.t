@@ -752,6 +752,76 @@ for (
       t1 => ['test3'],
       t2 => ['test4'],
     },
+    make_deploy_branches => ['master', {name => 'devel', buildless => 1}],
+  }} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp', 'foo', 'bar'],
+        }},
+      ],
+    }, 'test-t1' => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test-t1'},
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'test3'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/test-t1'}},
+      ],
+    }, 'test-t2' => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test-t2'},
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'test4'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/test-t2'}},
+      ],
+    }, deploy_master => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {deploy => {command => 'make deploy-master'}},
+      ],
+    }, soon_deploy_devel => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {deploy => {command => 'make deploy-devel'}},
+      ],
+    }, before_tests => {
+      machine => $machine,
+      steps => [{run => {command => 'true'}}],
+    }},
+    workflows => {version => 2, build => {jobs => [
+      {soon_deploy_devel => {filters => {branches => {only => ['devel']}},
+                             context => ['deploy-context']}},
+      'build',
+      {before_tests => {requires => ['build']}},
+      {'test-t1' => {requires => ['build', 'before_tests']}},
+      {'test-t2' => {requires => ['build', 'before_tests']}},
+      {deploy_master => {requires => ['build', 'test-t1', 'test-t2'],
+                         filters => {branches => {only => ['master']}},
+                         context => ['deploy-context']}},
+    ]}},
+  }}}, 'Multiple test steps with build-less deploy'],
+  [{circleci => {
+    build_generated_files => ['foo', 'bar'],
+    tests => {
+      t1 => ['test3'],
+      t2 => ['test4'],
+    },
     make_deploy_branches => ['master', {name => 'devel', testless => 1}],
   }} => {'.circleci/config.yml' => {json => {
     version => 2,
