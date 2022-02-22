@@ -26,7 +26,10 @@
    "workflows" : {
       "build" : {
          "jobs" : [
-            "build"
+            {
+               "build" : {
+               }
+            }
          ]
       },
       "version" : 2
