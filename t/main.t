@@ -96,7 +96,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {'docker-build' => 'abc/def'}} => {'.circleci/config.yml' => {json => {
     version => 2,
@@ -113,7 +113,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push abc/def && curl -sSLf $BWALL_URL -X POST' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {'docker-build' => 'xyz/abc/def'}} => {'.circleci/config.yml' => {json => {
     version => 2,
@@ -130,7 +130,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push xyz/abc/def && curl -sSLf $BWALL_URL -X POST' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {
     'docker-build' => 'xyz/abc/def',
@@ -176,7 +176,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {test => {requires => ['build']}},
       {'deploy_master' => {filters => {branches => {only => ['master']}},
                            requires => ['build', 'test'],
@@ -227,7 +227,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {test => {requires => ['build']}},
       {'deploy_master' => {filters => {branches => {only => ['master']}},
                            requires => ['build', 'test'],
@@ -270,7 +270,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {test => {requires => ['build']}},
     ]}},
   }}}, 'build jobs / docker, expression, no push'],
@@ -333,7 +333,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'test-pmbp' => {requires => ['build']}},
       {test => {requires => ['build']}},
       {'deploy_master' => {filters => {branches => {only => ['master']}},
@@ -355,7 +355,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}, 'required_docker_images build'],
   [{circleci => {
     required_docker_images => ['a/b', 'a/b/c'],
@@ -406,7 +406,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'test-t1' => {requires => ['build']}},
       {'test-t2' => {requires => ['build']}},
     ]}},
@@ -429,7 +429,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} . "\x0Atrue\x0A" . 'git push git@heroku.com:$HEROKU_APP_NAME.git +`git rev-parse HEAD`:refs/heads/master' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {heroku => {
     app_name => 'abcdef',
@@ -451,7 +451,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} . "\x0Atrue\x0A" . 'git push git@heroku.com:abcdef.git +`git rev-parse HEAD`:refs/heads/master' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {heroku => {prepare => [
     'abc', './foo bar',
@@ -475,7 +475,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} . "\x0Atrue\x0A" . 'git push git@heroku.com:$HEROKU_APP_NAME.git +`git rev-parse HEAD`:refs/heads/master' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {heroku => {pushed => [
     'abc', './foo bar',
@@ -499,7 +499,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} . "\x0Atrue\x0A" . './foo bar' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {
     heroku => 1,
@@ -533,7 +533,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'deploy_master' => {filters => {branches => {only => ['master']}},
                            requires => ['build'],
                            context => ['deploy-context']}},
@@ -582,7 +582,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {test => {requires => ['build']}},
       {'deploy_master' => {filters => {branches => {only => ['master']}},
                            requires => ['build', 'test'],
@@ -634,7 +634,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {test => {requires => ['build']}},
       {'deploy_master' => {filters => {branches => {only => ['master']}},
                            requires => ['build', 'test'],
@@ -683,7 +683,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'test-t1' => {requires => ['build']}},
       {'test-t2' => {requires => ['build']}},
     ]}},
@@ -738,7 +738,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'test-t1' => {requires => ['build']}},
       {'test-t2' => {requires => ['build']}},
       {deploy_master => {requires => ['build', 'test-t1', 'test-t2'],
@@ -807,7 +807,7 @@ for (
     workflows => {version => 2, build => {jobs => [
       {soon_deploy_devel => {filters => {branches => {only => ['devel']}},
                              context => ['deploy-context']}},
-      'build',
+      {'build'=>{}},
       {before_tests => {requires => ['build']}},
       {'test-t1' => {requires => ['build', 'before_tests']}},
       {'test-t2' => {requires => ['build', 'before_tests']}},
@@ -876,7 +876,7 @@ for (
       steps => [{run => {command => 'true'}}],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {early_deploy_devel => {requires => ['build'],
                               filters => {branches => {only => ['devel']}},
                               context => ['deploy-context']}},
@@ -956,7 +956,7 @@ for (
       steps => [{run => {command => 'true'}}],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {early_deploy_devel => {requires => ['build'],
                               filters => {branches => {only => ['devel']}},
                               context => ['deploy-context']}},
@@ -981,7 +981,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} . "\x0Atrue\x0A" . 'false' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}, 'deploy commands'],
   [{circleci => {
     deploy => ['true', 'false'],
@@ -1010,7 +1010,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {deploy_master => {requires => ['build'],
                          filters => {branches => {only => ['master']}},
                          context => ['deploy-context']}},
@@ -1032,7 +1032,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'oge"\\'\\\\x-' ]; then} . "\x0Atrue\x0A" . 'false' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {
     make_deploy_branches => ['master', 'staging'],
@@ -1049,7 +1049,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'staging' ]; then} . "\x0Atrue\x0A" . 'make deploy-staging' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {
     make_deploy_branches => ['master', 'staging'],
@@ -1085,7 +1085,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {deploy_master => {requires => ['build'],
                          filters => {branches => {only => ['master']}},
                          context => ['deploy-context']}},
@@ -1120,7 +1120,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'deploy_nightly' => {filters => {branches => {only => ['nightly']}},
                             requires => ['build'],
                             context => ['deploy-context']}},
@@ -1155,7 +1155,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {'deploy_nightly' => {filters => {branches => {only => ['nightly']}},
                             requires => ['build'],
                             context => ['deploy-context']}},
@@ -1178,7 +1178,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {deploy_branch => {
     x => [{awscli => 1}],
@@ -1196,7 +1196,7 @@ for (
                  "aws --version\nfi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {parallel => \1}} => {'.circleci/config.yml' => {json => {
     version => 2,
@@ -1210,7 +1210,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {
     parallel => 1,
@@ -1226,7 +1226,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {parallel => 4}} => {'.circleci/config.yml' => {json => {
     version => 2,
@@ -1240,7 +1240,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}, 'parallel 4'],
   [{circleci => {
     build_generated_files => [],
@@ -1273,7 +1273,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {test => {requires => ['build']}},
     ]}},
   }}}, 'parallel 4 build and test'],
@@ -1288,7 +1288,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {parallel => \0}} => {'.circleci/config.yml' => {json => {
     version => 2,
@@ -1301,7 +1301,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {build => [
     {command => 'a'},
@@ -1319,7 +1319,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {build => [
     {command => 'a', parallel => 1},
@@ -1337,7 +1337,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {build => [
     {command => ['a', 'b']},
@@ -1353,7 +1353,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {build => [
     {command => ['a', 'b']},
@@ -1374,7 +1374,7 @@ for (
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'b2' ]; then} . "\x0Atrue\x0A" . 'd' . "\x0Afi"}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => ['build']}},
+    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}, 'deploy branch'],
   [{circleci => {build => [
     {command => ['a', 'b']},
@@ -1412,7 +1412,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [
-      'build',
+      {'build'=>{}},
       {deploy_b1 => {requires => ['build'],
                      filters => {branches => {only => ['b1']}},
                      context => ['deploy-context']}},
@@ -1504,8 +1504,187 @@ for (
           }
         }
       ],
-    }, build => {jobs => ['build']}},
+    }, build => {jobs => [{'build'=>{}}]}},
   }}}],
+  [{circleci => {
+    build_generated_files => [],
+    parallel => 4,
+    tests => ['test1'],
+    tested_branches => ['b2', 'b1'],
+  }} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp'],
+        }},
+      ],
+    }, test => {
+      parallelism => 4,
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'test1'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+    workflows => {version => 2, build => {jobs => [
+      {'build'=>{filters => {branches => {only => ['b1', 'b2']}}}},
+      {test => {requires => ['build'],
+                filters => {branches => {only => ['b1', 'b2']}}}},
+    ]}},
+  }}}, 'parallel 4 build and test + tested_branches'],
+  [{circleci => {
+    make_deploy_branches => ['master', 'staging'],
+    tested_branches => ['test1'],
+  }} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} . "\x0Atrue\x0A" . 'make deploy-master' . "\x0Afi"}},
+        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'staging' ]; then} . "\x0Atrue\x0A" . 'make deploy-staging' . "\x0Afi"}},
+      ],
+    }},
+    workflows => {version => 2, build => {jobs => [{'build'=>{
+      filters => {branches => {only => ['master', 'staging', 'test1']}},
+    }}]}},
+  }}}, 'tested_branches + make_deploy_branches'],
+  [{circleci => {build => [
+    {command => ['a', 'b']},
+  ], tested_branches => ['x', 'y'], deploy_branch => {
+    b1 => ['c'],
+    b2 => ['d'],
+  }, build_generated_files => []}} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'a' . "\n" . 'b'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp'],
+        }},
+      ],
+    }, deploy_b1 => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {deploy => {command => 'c'}},
+      ],
+    }, deploy_b2 => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {deploy => {command => 'd'}},
+      ],
+    }},
+    workflows => {version => 2, build => {jobs => [
+      {'build'=>{filters => {branches => {only => [qw(b1 b2 x y)]}}}},
+      {deploy_b1 => {requires => ['build'],
+                     filters => {branches => {only => ['b1']}},
+                     context => ['deploy-context']}},
+      {deploy_b2 => {requires => ['build'],
+                     filters => {branches => {only => ['b2']}},
+                     context => ['deploy-context']}},
+    ]}},
+  }}}, 'deploy branch jobs + tested_branches'],
+  [{circleci => {
+    build_generated_files => ['foo', 'bar'],
+    tests => {
+      t1 => ['test3'],
+      t2 => ['test4'],
+    },
+    make_deploy_branches => ['master', {name => 'devel', testless => 1}],
+    tested_branches => ['xyz'],
+  }} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp', 'foo', 'bar'],
+        }},
+      ],
+    }, 'test-t1' => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test-t1'},
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'test3'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/test-t1'}},
+      ],
+    }, 'test-t2' => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test-t2'},
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'test4'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/test-t2'}},
+      ],
+    }, deploy_master => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {deploy => {command => 'make deploy-master'}},
+      ],
+    }, early_deploy_devel => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {deploy => {command => 'make deploy-devel'}},
+      ],
+    }, before_tests => {
+      machine => $machine,
+      steps => [{run => {command => 'true'}}],
+    }},
+    workflows => {version => 2, build => {jobs => [
+      {'build'=>{filters => {branches => {only => ['master', 'xyz']}}}},
+      {early_deploy_devel => {requires => ['build'],
+                              filters => {branches => {only => ['devel']}},
+                              context => ['deploy-context']}},
+      {before_tests => {requires => ['build'],
+                        filters => {branches => {only => ['master', 'xyz']}}}},
+      {'test-t1' => {requires => ['build', 'before_tests'],
+                     filters => {branches => {only => ['master', 'xyz']}}}},
+      {'test-t2' => {requires => ['build', 'before_tests'],
+                     filters => {branches => {only => ['master', 'xyz']}}}},
+      {deploy_master => {requires => ['build', 'test-t1', 'test-t2'],
+                         filters => {branches => {only => ['master']}},
+                         context => ['deploy-context']}},
+    ]}},
+  }}}, 'Multiple test steps with test-less deploy + tested_branches'],
+  
   [{github => {pmbp => 'latest'}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
     on => {push => {}},
