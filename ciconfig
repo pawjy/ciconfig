@@ -2625,10 +2625,13 @@ my $Platforms = {
               if defined $json->{$_};
         }
       } else {
+        my $deploy_branches = {};
+        my $test_jobs = [];
 
-        my $split_jobs = defined $json->{_build_generated_files};
         my $loads = [];
         push @$loads, 'checkout';
+        
+        my $split_jobs = defined $json->{_build_generated_files};
         if ($split_jobs) {
           push @$loads, {"attach_workspace" => {"at" => "./"}};
           if (@{$json->{_build_generated_images} or []}) {
@@ -2710,6 +2713,7 @@ my $Platforms = {
             push @{$json->{jobs}->{$split_jobs ? 'test' : 'build'}->{steps}}, map {
               circle_step ($_, deploy => 1, branch => $branch);
             } @{$json->{_deploy}->{$branch}};
+            $deploy_branches->{$branch} = 1;
           }
           delete $json->{_deploy};
         }
@@ -2734,8 +2738,9 @@ my $Platforms = {
         }
 
         ## Build jobs
-        push @{$json->{workflows}->{build}->{jobs}}, 'build';
-
+        my $build_job = {};
+        push @{$json->{workflows}->{build}->{jobs}}, {'build' => $build_job};
+        
         ## Deploy job executed after builds
         for my $branch_name (sort { $a cmp $b } keys %{$json->{_early_deploy_jobs} or {}}) {
           my $job_name = 'early_deploy_' . $branch_name;
@@ -2745,11 +2750,12 @@ my $Platforms = {
               map {
                 circle_step ($_, deploy => 1);
               } @{$json->{_early_deploy_jobs}->{$branch_name}};
-          push @{$json->{workflows}->{build}->{jobs}}, {$job_name => {
+          my $edj = {
             requires => \@build_job_name,
             filters => {branches => {only => [$branch_name]}},
             context => ['deploy-context'],
-          }};
+          };
+          push @{$json->{workflows}->{build}->{jobs}}, {$job_name => $edj};
         }
         my $test_requires = ['build'];
         if (keys %{$json->{_soon_deploy_jobs} or {}} or
@@ -2757,9 +2763,11 @@ my $Platforms = {
           my $job_name = 'before_tests';
           $json->{jobs}->{$job_name} = new_job;
           push @{$json->{jobs}->{$job_name}->{steps}}, circle_step ('true');
-          push @{$json->{workflows}->{build}->{jobs}}, {$job_name => {
+          my $btj = {
             requires => \@build_job_name,
-          }};
+          };
+          push @{$json->{workflows}->{build}->{jobs}}, {$job_name => $btj};
+          push @$test_jobs, $btj;
           push @$test_requires, $job_name;
         }
         delete $json->{_soon_deploy_jobs};
@@ -2768,12 +2776,13 @@ my $Platforms = {
         ## Test jobs
         for my $job_name (@job_name) {
           next if $job_name eq 'build';
-          push @{$json->{workflows}->{build}->{jobs}},
-              {$job_name => {requires => $test_requires}};
+          my $tj = {requires => $test_requires};
+          push @{$json->{workflows}->{build}->{jobs}}, {$job_name => $tj};
+          push @$test_jobs, $tj;
           if ($json->{_parallel}) {
             $json->{jobs}->{$job_name}->{parallelism} = $json->{_parallel};
           }
-        }
+        } # $job_name
         if (not $split_jobs and $json->{_parallel}) {
           $json->{jobs}->{build}->{parallelism} = $json->{_parallel};
         }
@@ -2793,9 +2802,19 @@ my $Platforms = {
             filters => {branches => {only => [$branch_name]}},
             context => ['deploy-context'],
           }};
+          $deploy_branches->{$branch_name} = 1;
         }
         delete $json->{_deploy_jobs};
 
+        if (defined $json->{_tested_branches}) {
+          $deploy_branches->{$_} = 1 for @{$json->{_tested_branches}};
+          my $branches = [sort { $a cmp $b } keys %$deploy_branches];
+          for my $tj ($build_job, @$test_jobs) {
+            $tj->{filters}->{branches}->{only} = $branches;
+          }
+        } # _tested_branches
+        delete $json->{_tested_branches};
+        
         delete $json->{_build_generated_files};
         delete $json->{_build_generated_images};
       }
@@ -3152,6 +3171,12 @@ $Options->{'circleci', 'tests'} = {
     } else {
       push @{$_[0]->{_test} ||= []}, @{$_[1]};
     }
+  },
+};
+
+$Options->{'circleci', 'tested_branches'} = {
+  set => sub {
+    push @{$_[0]->{_tested_branches} ||= []}, @{$_[1]};
   },
 };
 
