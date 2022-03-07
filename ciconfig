@@ -2954,11 +2954,19 @@ my $Platforms = {
         
         if (defined $input->{_perl_versions}) {
           if (delete $input->{_with_macos}) {
-            $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [(map {
-              {perl_version => $_, os => 'ubuntu-latest'};
-            } @{$input->{_perl_versions}}), (map {
-              {perl_version => $_, os => 'macos-latest'};
-            } @{$input->{_perl_versions}})];
+            if ($input->{_with_macos_latest_perl}) {
+              $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [(map {
+                {perl_version => $_, os => 'ubuntu-latest'};
+              } @{$input->{_perl_versions}}), (map {
+                {perl_version => $_, os => 'macos-latest'};
+              } 'latest')];
+            } else {
+              $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [(map {
+                {perl_version => $_, os => 'ubuntu-latest'};
+              } @{$input->{_perl_versions}}), (map {
+                {perl_version => $_, os => 'macos-latest'};
+              } @{$input->{_perl_versions}})];
+            }
           } else { # linux only
             $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
               {perl_version => $_};
@@ -3085,6 +3093,9 @@ $Options->{'circleci', 'pmbp'} = {
 $Options->{'github', 'macos'} = {
   set => sub {
     $_[0]->{_with_macos} = 1 if $_[1];
+    if (ref $_[1] and $_[1]->{latest_perl_only}) {
+      $_[0]->{_with_macos_latest_perl} = 1;
+    }
   },
 };
 

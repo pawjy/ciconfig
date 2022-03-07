@@ -1869,7 +1869,45 @@ for (
         {run => 'make test'},
       ],
     }},
-  }}}],
+  }}}, 'macos'],
+  [{github => {pmbp => 'latest', macos => {latest_perl_only => 1}}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => '${{ matrix.os }}',
+      strategy => {matrix => {include => [{perl_version => 'latest',
+                                           os => 'ubuntu-latest'},
+                                          {perl_version => 'latest',
+                                           os => 'macos-latest'}]},
+                   'fail-fast' => \0},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {uses => 'actions/checkout@v2'},
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}, 'macos latest perl'],
+  [{github => {pmbp => '5.14+', macos => {latest_perl_only => 1}}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => '${{ matrix.os }}',
+      strategy => {matrix => {include => [{perl_version => 'latest',
+                                           os => 'ubuntu-latest'},
+                                          {perl_version => '5.14.2',
+                                           os => 'ubuntu-latest'},
+                                          {perl_version => 'latest',
+                                           os => 'macos-latest'}]},
+                   'fail-fast' => \0},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}'},
+      steps => [
+        {uses => 'actions/checkout@v2'},
+        {run => 'make test-deps'},
+        {run => 'make test'},
+      ],
+    }},
+  }}}, 'macos latest perl + 5.14+'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml
