@@ -354,6 +354,19 @@ my $Platforms = {
         if ($input->{_with_macos}) {
           $job->{'runs-on'} = '${{ matrix.os }}';
         }
+
+        if (1) { # artifacts
+          my $artifacts_path = '/tmp/circle-artifacts/' . $json->{name};
+          $json->{jobs}->{test}->{env}->{CIRCLE_ARTIFACTS} = $artifacts_path;
+
+          unshift @{$job->{steps}},
+              (github_step 'mkdir -p $CIRCLE_ARTIFACTS');
+
+          ## <https://github.com/actions/upload-artifact>
+          push @{$job->{steps}},
+              {uses => 'actions/upload-artifact@v3',
+               with => {path => $artifacts_path}};
+        } # artifacts
         
         unshift @{$job->{steps}},
             {"uses" => 'actions/checkout@v2'};
