@@ -87,26 +87,43 @@ sub github_step ($) {
   return $output;
 } # github_step
 
-sub droneci_step ($$) {
-  my ($state, $input) = @_;
+sub droneci_step ($) {
+  my ($input) = @_;
   my $outputs = [];
   if (ref $input) {
+    my $cmd = $input->{command};
+    die "No |command|" unless defined $cmd;
     if (defined $input->{wd}) {
-      push @$outputs, 'cd ' . (quotemeta $input->{wd});
-      $state->{wd} = $input->{wd};
-    } else {
-      push @$outputs, 'cd /drone/src';
-      delete $state->{wd};
+      $cmd = 'cd ' . (quotemeta $input->{wd}) . ' && ' . $cmd;
     }
-    push @$outputs, $input->{command} // die "No |command|";
+    if ($input->{shared_dir}) {
+      if ($input->{nested}) {
+        my $cmd1 = q{cd };
+        my $cmd2 = q{ && } . $cmd;
+        $cmd = 'bash -c ' . (quotemeta $cmd1) . 
+            q{`cat /drone/src/local/ciconfig/dockershareddir`} .
+            (quotemeta $cmd2);
+      } else {
+        $cmd = 'cd `cat /drone/src/local/ciconfig/dockershareddir` && ' . $cmd;
+        $cmd = 'bash -c ' . quotemeta $cmd;
+      }
+    } elsif ($input->{nested} or defined $input->{wd}) {
+      $cmd = 'bash -c ' . quotemeta $cmd;
+    }
+    if ($input->{nested}) {
+      my @cmd = ('docker exec -t');
+      if (ref $input->{nested}) {
+        for my $name (sort { $a cmp $b } @{$input->{nested}->{envs}}) {
+          push @cmd, '-e ' . $name . q{='$} . $name . q{'};
+        }
+      }
+      push @cmd, q(`cat /drone/src/local/ciconfig/dockername`), $cmd;
+      $cmd = join ' ', @cmd;
+    }
+    return $cmd;
   } else {
-    if (defined $state->{wd}) {
-      push @$outputs, 'cd /drone/src';
-      delete $state->{wd};
-    }
-    push @$outputs, $input;
+    return $input;
   }
-  return @$outputs;
 } # droneci_step
 
 my $Platforms = {
@@ -485,16 +502,18 @@ my $Platforms = {
       $json->{kind} = 'pipeline';
       $json->{type} = 'docker';
       $json->{name} = 'default';
+      $json->{workspace}->{path} = '/drone/src';
 
-      my $step = {};
-      push @{$json->{steps} ||= []}, $step;
-      $step->{name} = 'build';
-      $step->{image} = 'quay.io/wakaba/docker-perl-app-base';
-      $step->{commands} = [];
-      my $state = {};
+      my $bstep = {};
+      push @{$json->{steps} ||= []}, $bstep;
+      $bstep->{name} = 'build';
+      $bstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+      $bstep->{commands} = [];
 
-      if (delete $json->{_docker}) {
-        push @{$step->{volumes} ||= []}, {
+      my $volumes = [];
+      my $cleanup_steps = [];
+      if (my $dd = delete $json->{_docker}) {
+        push @$volumes, {
           name => 'dockersock',
           path => '/var/run/docker.sock',
         };
@@ -503,26 +522,81 @@ my $Platforms = {
           host => {path => '/var/run/docker.sock'},
         };
 
-        push @{$step->{commands}}, 
-            droneci_step $state, {
+        if ($dd->{with_shared_dir}) {
+          push @$volumes, {
+            name => 'dockershareddir',
+            path => '/var/lib/docker/shareddir',
+          };
+          push @{$json->{volumes} ||= []}, {
+            name => 'dockershareddir',
+            host => {path => '/var/lib/docker/shareddir'},
+          };
+          my $path = '/var/lib/docker/shareddir/' . rand;
+          push @{$bstep->{commands}}, map { droneci_step $_ }
+              'mkdir -p /drone/src/local/ciconfig',
+              q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+              'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`';
+        }
+
+        push @{$bstep->{commands}}, 
+            droneci_step {
               command => 'perl local/bin/pmbp.pl --install-commands docker',
               wd => '/app',
             };
+
+        if ($dd->{with_nested}) {
+          push @{$bstep->{commands}}, map { droneci_step $_ }
+              q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
+              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash';
+
+          my $cstep = {};
+          push @$cleanup_steps, $cstep;
+          $cstep->{name} = 'cleanup-nested';
+          $cstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+          $cstep->{commands} = [];
+          $cstep->{when}->{status} = ['failure', 'success'];
+
+          push @{$cstep->{commands}}, map { droneci_step $_ }
+              {
+                command => 'perl local/bin/pmbp.pl --install-commands docker',
+                wd => '/app',
+              },
+              'docker stop `cat /drone/src/local/ciconfig/dockername`',
+              'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`';
+          push @{$cstep->{volumes} ||= []}, @$volumes;
+        }
       } # _docker
 
       for (sort { $a cmp $b } keys %{$json->{_build_steps}}) {
-        push @{$step->{commands}}, map {
-          droneci_step $state, $_;
+        push @{$bstep->{commands}}, map {
+          droneci_step $_;
         } @{$json->{_build_steps}->{$_}};
       }
+      push @{$bstep->{volumes} ||= []}, @$volumes if @$volumes;
+      delete $json->{_build_steps};
+
       for (sort { $a cmp $b } keys %{$json->{_test_steps}}) {
-        push @{$step->{commands}}, map {
-          droneci_step $state, $_;
+        push @{$bstep->{commands}}, map {
+          droneci_step $_;
         } @{$json->{_test_steps}->{$_}};
       }
-      delete $json->{_build_steps};
       delete $json->{_test_steps};
 
+      for (sort { $a cmp $b } keys %{$json->{_deploy_steps} or {}}) {
+        my $tstep = {};
+        push @{$json->{steps} ||= []}, $tstep;
+        $tstep->{name} = 'deploy-' . $_;
+        $tstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+        $tstep->{commands} = [];
+
+        push @{$tstep->{commands}}, map {
+          droneci_step $_;
+        } @{$json->{_deploy_steps}->{$_}};
+        push @{$tstep->{volumes} ||= []}, @$volumes if @$volumes;
+      }
+      delete $json->{_deploy_steps};
+
+      push @{$json->{steps} ||= []}, @$cleanup_steps;
     }, # set
   },
 }; # $Platforms
@@ -854,7 +928,11 @@ $Options->{'circleci', 'deploy_branch'} = {
 $Options->{'droneci', 'docker'} = {
   set => sub {
     return unless $_[1];
-    $_[0]->{_docker} = 1;
+    $_[0]->{_docker} = {};
+    if (ref $_[1]) {
+      $_[0]->{_docker}->{with_shared_dir} = 1 if $_[1]->{nested};
+      $_[0]->{_docker}->{with_nested} = 1 if $_[1]->{nested};
+    }
   },
 };
 

@@ -1949,6 +1949,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -1959,6 +1960,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -1975,6 +1977,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -1991,6 +1994,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2009,6 +2013,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2028,6 +2033,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2043,6 +2049,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2051,8 +2058,7 @@ for (
         path => '/var/run/docker.sock',
       }],
       commands => [
-        "cd \\/app",
-        "perl local/bin/pmbp.pl --install-commands docker",
+        "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
       ],
     }],
     volumes => [{
@@ -2060,6 +2066,56 @@ for (
       host => {path => '/var/run/docker.sock'},
     }],
   }}}, 'droneci docker'],
+  [{droneci => {docker => {nested => 1}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        "mkdir -p /drone/src/local/ciconfig",
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash},
+      ],
+    }, {
+      name => 'cleanup-nested',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'docker stop `cat /drone/src/local/ciconfig/dockername`',
+        'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+    }],
+    volumes => [{
+      name => 'dockersock',
+      host => {path => '/var/run/docker.sock'},
+    }, {
+      name => 'dockershareddir',
+      host => {path => '/var/lib/docker/shareddir'},
+    }],
+  }}}, 'droneci docker nested'],
   [{droneci => {docker => 1, tests => [
     "ls",
     {command => "pwd", wd => "/foo"},
@@ -2069,6 +2125,7 @@ for (
     kind => 'pipeline',
     type => 'docker',
     name => 'default',
+    workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2077,15 +2134,10 @@ for (
         path => '/var/run/docker.sock',
       }],
       commands => [
-        "cd \\/app",
-        "perl local/bin/pmbp.pl --install-commands docker",
-        "cd /drone/src",
+        "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
         "ls",
-        "cd \\/foo",
-        "pwd",
-        "cd \\/bar",
-        "ab",
-        "cd /drone/src",
+        "bash -c cd\\ \\\\\\/foo\\ \\&\\&\\ pwd",
+        "bash -c cd\\ \\\\\\/bar\\ \\&\\&\\ ab",
         "cd",
       ],
     }],
@@ -2094,6 +2146,95 @@ for (
       host => {path => '/var/run/docker.sock'},
     }],
   }}}, 'droneci test wds'],
+  [{droneci => {
+    docker => {nested => 1},
+    tests => [
+      'a\\b',
+      {"command" => 'a\\b'},
+      {"command" => 'a\\b',
+       wd => 'c\\d'},
+      {"command" => 'a\\b',
+       shared_dir => 1},
+      {"command" => 'a\\b',
+       shared_dir => 1,
+       wd => 'c\\d'},
+      {"command" => 'a\\b',
+       nested => 1},
+      {"command" => 'a\\b',
+       nested => 1,
+       wd => 'c\\d'},
+      {"command" => 'a\\b',
+       nested => 1,
+       shared_dir => 1},
+      {"command" => 'a\\b',
+       nested => 1,
+       shared_dir => 1,
+       wd => 'c\\d'},
+      {"command" => 'a\\b',
+       nested => {envs => ['AB', 'X\\Y']},
+       shared_dir => 1,
+       wd => 'c\\d'},
+    ],
+  }} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        "mkdir -p /drone/src/local/ciconfig",
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash},
+        'a\\b',
+        'a\\b',
+        'bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+        'bash -c cd\\ \\`cat\\ \\/drone\\/src\\/local\\/ciconfig\\/dockershareddir\\`\\ \\&\\&\\ a\\\\b',
+        'bash -c cd\\ \\`cat\\ \\/drone\\/src\\/local\\/ciconfig\\/dockershareddir\\`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+        'docker exec -t -e AB=\'$AB\' -e X\\Y=\'$X\\Y\' `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+      ],
+    }, {
+      name => 'cleanup-nested',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'docker stop `cat /drone/src/local/ciconfig/dockername`',
+        'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+    }],
+    volumes => [{
+      name => 'dockersock',
+      host => {path => '/var/run/docker.sock'},
+    }, {
+      name => 'dockershareddir',
+      host => {path => '/var/lib/docker/shareddir'},
+    }],
+  }}}, 'droneci docker nested commands'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
