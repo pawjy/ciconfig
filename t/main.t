@@ -2206,7 +2206,7 @@ for (
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
-        'docker exec -t -e AB=\'$AB\' -e X\\Y=\'$X\\Y\' `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+        'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
       ],
     }, {
       name => 'cleanup-nested',
