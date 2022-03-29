@@ -1944,9 +1944,159 @@ for (
       ],
     }},
   }}}, 'macos latest perl + 5.14+'],
+  
+  [{droneci => {}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [],
+    }],
+  }}}, 'droneci empty'],
+  [{droneci => {"pmbp" => 1}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "make test-deps",
+        "make test"
+      ],
+    }],
+  }}}, 'droneci pmbp'],
+  [{droneci => {build => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+    }],
+  }}}, 'droneci build'],
+  [{droneci => {tests => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+    }],
+  }}}, 'droneci tests'],
+  [{droneci => {build => [
+    "aaa"
+  ], tests => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+        "foo bar",
+        "baz"
+      ],
+    }],
+  }}}, 'droneci build tests'],
+  [{droneci => {build => [
+    "aaa"
+  ], tests => {"a" => [
+    "foo bar",
+    "baz"
+  ], "b" => ["x"]}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+        "foo bar",
+        "baz",
+        "x",
+      ],
+    }],
+  }}}, 'droneci build tests 2'],
+  [{droneci => {docker => 1}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }],
+      commands => [
+        "cd \\/app",
+        "perl local/bin/pmbp.pl --install-commands docker",
+      ],
+    }],
+    volumes => [{
+      name => 'dockersock',
+      host => {path => '/var/run/docker.sock'},
+    }],
+  }}}, 'droneci docker'],
+  [{droneci => {docker => 1, tests => [
+    "ls",
+    {command => "pwd", wd => "/foo"},
+    {command => "ab", wd => "/bar"},
+    "cd",
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }],
+      commands => [
+        "cd \\/app",
+        "perl local/bin/pmbp.pl --install-commands docker",
+        "cd /drone/src",
+        "ls",
+        "cd \\/foo",
+        "pwd",
+        "cd \\/bar",
+        "ab",
+        "cd /drone/src",
+        "cd",
+      ],
+    }],
+    volumes => [{
+      name => 'dockersock',
+      host => {path => '/var/run/docker.sock'},
+    }],
+  }}}, 'droneci test wds'],
 ) {
   my ($input, $expected, $name) = @$_;
-  for (qw(.travis.yml circle.yml .circleci/config.yml
+  for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
           .github/workflows/test.yml
           .github/workflows/cron.yml)) {
     $expected->{$_} ||= {remove => 1};

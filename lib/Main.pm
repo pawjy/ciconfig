@@ -87,6 +87,28 @@ sub github_step ($) {
   return $output;
 } # github_step
 
+sub droneci_step ($$) {
+  my ($state, $input) = @_;
+  my $outputs = [];
+  if (ref $input) {
+    if (defined $input->{wd}) {
+      push @$outputs, 'cd ' . (quotemeta $input->{wd});
+      $state->{wd} = $input->{wd};
+    } else {
+      push @$outputs, 'cd /drone/src';
+      delete $state->{wd};
+    }
+    push @$outputs, $input->{command} // die "No |command|";
+  } else {
+    if (defined $state->{wd}) {
+      push @$outputs, 'cd /drone/src';
+      delete $state->{wd};
+    }
+    push @$outputs, $input;
+  }
+  return @$outputs;
+} # droneci_step
+
 my $Platforms = {
   travisci => {
     file => '.travis.yml',
@@ -452,6 +474,57 @@ my $Platforms = {
       '.github/workflows/cron.yml',
     ],
   },
+  droneci => {
+    file => '.drone.yml',
+    set => sub {
+      my $json = $_[0];
+
+      ## <https://docs.drone.io/pipeline/overview/>
+      ## <https://docs.drone.io/yaml/docker/>
+
+      $json->{kind} = 'pipeline';
+      $json->{type} = 'docker';
+      $json->{name} = 'default';
+
+      my $step = {};
+      push @{$json->{steps} ||= []}, $step;
+      $step->{name} = 'build';
+      $step->{image} = 'quay.io/wakaba/docker-perl-app-base';
+      $step->{commands} = [];
+      my $state = {};
+
+      if (delete $json->{_docker}) {
+        push @{$step->{volumes} ||= []}, {
+          name => 'dockersock',
+          path => '/var/run/docker.sock',
+        };
+        push @{$json->{volumes} ||= []}, {
+          name => 'dockersock',
+          host => {path => '/var/run/docker.sock'},
+        };
+
+        push @{$step->{commands}}, 
+            droneci_step $state, {
+              command => 'perl local/bin/pmbp.pl --install-commands docker',
+              wd => '/app',
+            };
+      } # _docker
+
+      for (sort { $a cmp $b } keys %{$json->{_build_steps}}) {
+        push @{$step->{commands}}, map {
+          droneci_step $state, $_;
+        } @{$json->{_build_steps}->{$_}};
+      }
+      for (sort { $a cmp $b } keys %{$json->{_test_steps}}) {
+        push @{$step->{commands}}, map {
+          droneci_step $state, $_;
+        } @{$json->{_test_steps}->{$_}};
+      }
+      delete $json->{_build_steps};
+      delete $json->{_test_steps};
+
+    }, # set
+  },
 }; # $Platforms
 
 my $Options = {};
@@ -491,6 +564,15 @@ $Options->{'github', 'pmbp'} = {
     return unless $_[1];
     my $json = $_[0];
     $_[0]->{_perl_versions} = $PerlVersions->{$_[1]} || die "Unknown |pmbp| value |$_[1]|";
+    push @{$json->{_build_steps}->{pmbp} ||= []}, 'make test-deps';
+    push @{$json->{_test_steps}->{pmbp} ||= []}, 'make test';
+  },
+};
+
+$Options->{'droneci', 'pmbp'} = {
+  set => sub {
+    return unless $_[1];
+    my $json = $_[0];
     push @{$json->{_build_steps}->{pmbp} ||= []}, 'make test-deps';
     push @{$json->{_test_steps}->{pmbp} ||= []}, 'make test';
   },
@@ -673,9 +755,33 @@ $Options->{'circleci', 'docker-build'} = {
   },
 };
 
+$Options->{'droneci', 'build'} = {
+  set => sub {
+    if (ref $_[1] eq 'HASH') {
+      for (keys %{$_[1]}) {
+        push @{$_[0]->{_build_steps}->{$_} ||= []}, @{$_[1]->{$_}};
+      }
+    } else {
+      push @{$_[0]->{_build_steps}->{default} ||= []}, @{$_[1]};
+    }
+  },
+};
+
 $Options->{'circleci', 'build'} = {
   set => sub {
     push @{$_[0]->{_build} ||= []}, @{$_[1]};
+  },
+};
+
+$Options->{'droneci', 'tests'} = {
+  set => sub {
+    if (ref $_[1] eq 'HASH') {
+      for (keys %{$_[1]}) {
+        push @{$_[0]->{_test_steps}->{$_} ||= []}, @{$_[1]->{$_}};
+      }
+    } else {
+      push @{$_[0]->{_test_steps}->{default} ||= []}, @{$_[1]};
+    }
   },
 };
 
@@ -742,6 +848,13 @@ $Options->{'circleci', 'deploy_branch'} = {
     for my $branch (sort { $a cmp $b } keys %$def) {
       push @{$_[0]->{$has_bg ? '_deploy_jobs' : '_deploy'}->{$branch} ||= []}, @{$def->{$branch}};
     }
+  },
+};
+
+$Options->{'droneci', 'docker'} = {
+  set => sub {
+    return unless $_[1];
+    $_[0]->{_docker} = 1;
   },
 };
 
