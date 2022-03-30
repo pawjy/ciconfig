@@ -1966,6 +1966,11 @@ for (
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "make test-deps",
+      ],
+    }, {
+      name => 'test-pmbp',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
         "make test"
       ],
     }],
@@ -1999,6 +2004,11 @@ for (
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
+      ],
+    }, {
+      name => 'test-default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
         "foo bar",
         "baz"
       ],
@@ -2019,6 +2029,11 @@ for (
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "aaa",
+      ],
+    }, {
+      name => 'test-default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
         "foo bar",
         "baz"
       ],
@@ -2039,8 +2054,18 @@ for (
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "aaa",
+      ],
+    }, {
+      name => 'test-a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
         "foo bar",
         "baz",
+      ],
+    }, {
+      name => 'test-b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
         "x",
       ],
     }],
@@ -2135,6 +2160,16 @@ for (
       }],
       commands => [
         "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
+      ],
+    }, {
+      name => 'test-default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }],
+      commands => [
+        "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
         "ls",
         "bash -c cd\\ \\\\\\/foo\\ \\&\\&\\ pwd",
         "bash -c cd\\ \\\\\\/bar\\ \\&\\&\\ ab",
@@ -2201,7 +2236,20 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash}
+      ]
+    }, {
+      name => 'test-default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'a\\b',
         'a\\b',
         'bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',

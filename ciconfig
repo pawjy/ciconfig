@@ -3017,6 +3017,7 @@ my $Platforms = {
       $bstep->{commands} = [];
 
       my $volumes = [];
+      my $init_commands = [];
       my $cleanup_steps = [];
       if (my $dd = delete $json->{_docker}) {
         push @$volumes, {
@@ -3044,11 +3045,11 @@ my $Platforms = {
               'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`';
         }
 
-        push @{$bstep->{commands}}, 
-            droneci_step {
-              command => 'perl local/bin/pmbp.pl --install-commands docker',
-              wd => '/app',
-            };
+        push @$init_commands, {
+          command => 'perl local/bin/pmbp.pl --install-commands docker',
+          wd => '/app',
+        };
+        push @{$bstep->{commands}}, map { droneci_step $_ } @$init_commands;
 
         if ($dd->{with_nested}) {
           push @{$bstep->{commands}}, map { droneci_step $_ }
@@ -3063,10 +3064,7 @@ my $Platforms = {
           $cstep->{when}->{status} = ['failure', 'success'];
 
           push @{$cstep->{commands}}, map { droneci_step $_ }
-              {
-                command => 'perl local/bin/pmbp.pl --install-commands docker',
-                wd => '/app',
-              },
+              @$init_commands,
               'docker stop `cat /drone/src/local/ciconfig/dockername`',
               'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`';
           push @{$cstep->{volumes} ||= []}, @$volumes;
@@ -3081,24 +3079,31 @@ my $Platforms = {
       push @{$bstep->{volumes} ||= []}, @$volumes if @$volumes;
       delete $json->{_build_steps};
 
-      for (sort { $a cmp $b } keys %{$json->{_test_steps}}) {
-        push @{$bstep->{commands}}, map {
-          droneci_step $_;
-        } @{$json->{_test_steps}->{$_}};
-      }
-      delete $json->{_test_steps};
-
-      for (sort { $a cmp $b } keys %{$json->{_deploy_steps} or {}}) {
+      for (sort { $a cmp $b } keys %{$json->{_test_steps} or {}}) {
         my $tstep = {};
         push @{$json->{steps} ||= []}, $tstep;
-        $tstep->{name} = 'deploy-' . $_;
+        $tstep->{name} = 'test-' . $_;
         $tstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
         $tstep->{commands} = [];
 
         push @{$tstep->{commands}}, map {
           droneci_step $_;
-        } @{$json->{_deploy_steps}->{$_}};
+        } @$init_commands, @{$json->{_test_steps}->{$_}};
         push @{$tstep->{volumes} ||= []}, @$volumes if @$volumes;
+      }
+      delete $json->{_test_steps};
+
+      for (sort { $a cmp $b } keys %{$json->{_deploy_steps} or {}}) {
+        my $dstep = {};
+        push @{$json->{steps} ||= []}, $dstep;
+        $dstep->{name} = 'deploy-' . $_;
+        $dstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+        $dstep->{commands} = [];
+
+        push @{$dstep->{commands}}, map {
+          droneci_step $_;
+        } @{$json->{_deploy_steps}->{$_}};
+        push @{$dstep->{volumes} ||= []}, @$volumes if @$volumes;
       }
       delete $json->{_deploy_steps};
 
