@@ -3196,6 +3196,21 @@ my $Platforms = {
       }
       delete $json->{_deploy_steps};
 
+      for (sort { $a cmp $b } keys %{$json->{_cleanup_steps} or {}}) {
+        my $cstep = {};
+        push @{$json->{steps} ||= []}, $cstep;
+        $cstep->{name} = 'cleanup-' . $_;
+        $cstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+        $cstep->{commands} = [];
+        $cstep->{when}->{status} = ['failure', 'success'];
+
+        push @{$cstep->{commands}}, map {
+          droneci_step $_;
+        } @{$json->{_cleanup_steps}->{$_}};
+        push @{$cstep->{volumes} ||= []}, @$volumes if @$volumes;
+      }
+      delete $json->{_cleanup_steps};
+
       push @{$json->{steps} ||= []}, @$cleanup_steps;
     }, # set
   },
@@ -3521,6 +3536,18 @@ $Options->{'circleci', 'deploy_branch'} = {
     my $has_bg = !! $_[0]->{_build_generated_files};
     for my $branch (sort { $a cmp $b } keys %$def) {
       push @{$_[0]->{$has_bg ? '_deploy_jobs' : '_deploy'}->{$branch} ||= []}, @{$def->{$branch}};
+    }
+  },
+};
+
+$Options->{'droneci', 'cleanup'} = {
+  set => sub {
+    if (ref $_[1] eq 'HASH') {
+      for (keys %{$_[1]}) {
+        push @{$_[0]->{_cleanup_steps}->{$_} ||= []}, @{$_[1]->{$_}};
+      }
+    } else {
+      push @{$_[0]->{_cleanup_steps}->{default} ||= []}, @{$_[1]};
     }
   },
 };

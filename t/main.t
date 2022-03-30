@@ -2289,6 +2289,39 @@ for (
       host => {path => '/var/lib/docker/shareddir'},
     }],
   }}}, 'droneci docker nested commands'],
+  [{droneci => {tests => [
+    "aaa"
+  ], cleanup => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test-default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+    }, {
+      name => 'cleanup-default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+    }],
+  }}}, 'droneci build cleanup'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
