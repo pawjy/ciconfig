@@ -119,6 +119,7 @@ sub droneci_step ($) {
       }
       push @cmd, q(`cat /drone/src/local/ciconfig/dockername`), $cmd;
       $cmd = join ' ', @cmd;
+      $cmd .= ' &' if $input->{background};
     }
     return $cmd;
   } else {
