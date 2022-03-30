@@ -2174,6 +2174,11 @@ for (
        nested => {envs => ['AB', 'X\\Y']},
        shared_dir => 1,
        wd => 'c\\d'},
+      {"command" => 'a\\b',
+       nested => {envs => ['AB', 'X\\Y']},
+       shared_dir => 1,
+       wd => 'c\\d',
+       background => 1},
     ],
   }} => {'.drone.yml' => {json => {
     kind => 'pipeline',
@@ -2207,6 +2212,7 @@ for (
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
         'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
+        'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b &',
       ],
     }, {
       name => 'cleanup-nested',
