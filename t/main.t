@@ -2757,6 +2757,55 @@ for (
       depends_on => [qw(build test--default)],
     }],
   }}}, 'droneci build cleanup artifacts'],
+  [{droneci => {build => ["x"], tests => [
+    "aaa"
+  ], failed => [
+    "foo bar",
+    "baz"
+  ], artifacts => 1}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'mkdir -p /drone/src/local/ciconfig',
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "x",
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'failed--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed--default',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default)],
+    }],
+  }}}, 'droneci build cleanup artifacts'],
   [{droneci => {
     docker => {nested => 1},
     artifacts => 1,
