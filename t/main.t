@@ -1977,6 +1977,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }],
   }}}, 'droneci pmbp'],
   [{droneci => {build => [
@@ -2020,6 +2021,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }],
   }}}, 'droneci tests'],
   [{droneci => {build => [
@@ -2049,6 +2051,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }],
   }}}, 'droneci build tests'],
   [{droneci => {build => [
@@ -2078,6 +2081,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }, {
       name => 'test--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2088,6 +2092,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }],
   }}}, 'droneci build tests 2'],
   [{droneci => {docker => 1}} => {'.drone.yml' => {json => {
@@ -2153,6 +2158,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build)],
     }],
     volumes => [{
       name => 'dockersock',
@@ -2200,6 +2206,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }],
     volumes => [{
       name => 'dockersock',
@@ -2291,6 +2298,7 @@ for (
         'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
         'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b &',
       ],
+      depends_on => [qw(build)],
     }, {
       name => 'cleanup-nested',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2310,6 +2318,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }],
     volumes => [{
       name => 'dockersock',
@@ -2344,6 +2353,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }, {
       name => 'cleanup--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2355,6 +2365,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }],
   }}}, 'droneci build cleanup'],
   [{droneci => {
@@ -2405,6 +2416,7 @@ for (
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'a',
       ],
+      depends_on => [qw(build)],
     }, {
       name => 'cleanup--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2423,6 +2435,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup-nested',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2442,6 +2455,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default cleanup--b)],
     }, {
       name => 'cleanup--a',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2460,6 +2474,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default cleanup--b cleanup-nested)],
     }],
     volumes => [{
       name => 'dockersock',
@@ -2494,6 +2509,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }, {
       name => 'failed--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2504,6 +2520,7 @@ for (
         status => ['failure'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2515,6 +2532,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default failed--default)],
     }],
   }}}, 'droneci build failed'],
   [{droneci => {tests => [
@@ -2542,6 +2560,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2552,6 +2571,7 @@ for (
         status => ['failure'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }, {
       name => 'failed--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2562,6 +2582,7 @@ for (
         status => ['failure'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2573,6 +2594,8 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default
+                        failed--a failed--b)],
     }],
   }}}, 'droneci build failed rules'],
   [{droneci => {build => ["x"], tests => [
@@ -2607,6 +2630,7 @@ for (
         CIRCLE_NODE_TOTAL => "1",
         CIRCLE_NODE_INDEX => "0",
       },
+      depends_on => [qw(build)],
     }, {
       name => 'cleanup--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2618,6 +2642,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }],
   }}}, 'droneci build cleanup artifacts'],
   [{droneci => {
@@ -2673,6 +2698,7 @@ for (
         'mkdir -p $CIRCLE_ARTIFACTS',
         'a',
       ],
+      depends_on => [qw(build)],
     }, {
       name => 'cleanup--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2691,6 +2717,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup-nested',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2710,6 +2737,7 @@ for (
         status => ['failure', 'success'],
       },
       failure => 'ignore',
+      depends_on => [qw(build test--default cleanup--b)],
     }],
     volumes => [{
       name => 'dockersock',
