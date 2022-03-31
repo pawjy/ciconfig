@@ -3492,26 +3492,21 @@ $Options->{'circleci', 'tested_branches'} = {
 $Options->{'droneci', 'make_deploy_branches'} = {
   set => sub {
     for (@{$_[1]}) {
-      my $branch;
-      my $buildless;
-      my $testless;
-      my $awscli;
-      if (ref $_) {
-        $branch = $_->{name};
-        $buildless = $_->{buildless};
-        $testless = $_->{testless} || $buildless;
-        $awscli = $_->{awscli};
-      } else {
-        $branch = $_;
-      }
+      my $x = $_;
+      $x = {name => $x} unless ref $x eq 'HASH';
+      my $branch = $x->{name};
       die "Bad name |$branch|" unless length $branch;
       push @{$_[0]->{_deploy_rules} ||= []}, {
         name => 'deploy-make--' . $branch,
-        buildless => $buildless,
-        testless => $testless,
+        buildless => $x->{buildless},
+        testless => $x->{testless},
         commands => [
-          ($awscli ? {awscli => 1} : ()),
-          "make deploy-$branch",
+          ($x->{awscli} ? {awscli => 1,
+                           nested => $x->{nested}} : ()),
+          {command => "make deploy-$branch",
+           nested => $x->{nested},
+           shared_dir => $x->{shared_dir},
+           wd => $x->{wd}},
         ],
         branches => [$branch],
       };

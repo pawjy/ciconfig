@@ -3120,6 +3120,48 @@ for (
       when => {status => ['failure']},
     }],
   }}}, 'droneci make_deploy_branches awscli'],
+  [{droneci => {tests => [
+    "aaa"
+  ], make_deploy_branches => [{
+    "name"=>"bb","nested"=>{
+      envs => ['A'],
+    },
+    awscli=>1,
+    shared_dir => 1, wd => 'foop',
+  }]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-make--bb',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c ' . quotemeta ("(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
+                 "aws --version"),
+        'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
+      ],
+      depends_on => ['build', 'test--default'],
+      when => {branch => ['bb']},
+    }],
+  }}}, 'droneci make_deploy_branches nested'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
