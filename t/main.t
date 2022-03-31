@@ -2006,7 +2006,7 @@ for (
       commands => [
       ],
     }, {
-      name => 'test-default',
+      name => 'test--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "foo bar",
@@ -2031,7 +2031,7 @@ for (
         "aaa",
       ],
     }, {
-      name => 'test-default',
+      name => 'test--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "foo bar",
@@ -2056,14 +2056,14 @@ for (
         "aaa",
       ],
     }, {
-      name => 'test-a',
+      name => 'test--a',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "foo bar",
         "baz",
       ],
     }, {
-      name => 'test-b',
+      name => 'test--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "x",
@@ -2162,7 +2162,7 @@ for (
         "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
       ],
     }, {
-      name => 'test-default',
+      name => 'test--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
       volumes => [{
         name => 'dockersock',
@@ -2239,7 +2239,7 @@ for (
         q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash}
       ]
     }, {
-      name => 'test-default',
+      name => 'test--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
       volumes => [{
         name => 'dockersock',
@@ -2305,7 +2305,7 @@ for (
       commands => [
       ],
     }, {
-      name => 'test-default',
+      name => 'test--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "aaa",
@@ -2353,7 +2353,7 @@ for (
         q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash}
       ]
     }, {
-      name => 'test-default',
+      name => 'test--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
       volumes => [{
         name => 'dockersock',
@@ -2427,6 +2427,99 @@ for (
       host => {path => '/var/lib/docker/shareddir'},
     }],
   }}}, 'droneci docker nested cleanup'],
+  [{droneci => {tests => [
+    "aaa"
+  ], failed => ["x"], cleanup => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+    }, {
+      name => 'failed--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x"
+      ],
+      when => {
+        status => ['failure'],
+      },
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+    }],
+  }}}, 'droneci build failed'],
+  [{droneci => {tests => [
+    "aaa"
+  ], failed => {"a" => ["x"], "b" => ["y"]}, cleanup => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x"
+      ],
+      when => {
+        status => ['failure'],
+      },
+    }, {
+      name => 'failed--b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "y"
+      ],
+      when => {
+        status => ['failure'],
+      },
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+    }],
+  }}}, 'droneci build failed rules'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
