@@ -1973,6 +1973,10 @@ for (
       commands => [
         "make test"
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }],
   }}}, 'droneci pmbp'],
   [{droneci => {build => [
@@ -2012,6 +2016,10 @@ for (
         "foo bar",
         "baz"
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }],
   }}}, 'droneci tests'],
   [{droneci => {build => [
@@ -2037,6 +2045,10 @@ for (
         "foo bar",
         "baz"
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }],
   }}}, 'droneci build tests'],
   [{droneci => {build => [
@@ -2062,12 +2074,20 @@ for (
         "foo bar",
         "baz",
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }, {
       name => 'test--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
         "x",
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }],
   }}}, 'droneci build tests 2'],
   [{droneci => {docker => 1}} => {'.drone.yml' => {json => {
@@ -2132,6 +2152,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }],
     volumes => [{
       name => 'dockersock',
@@ -2175,6 +2196,10 @@ for (
         "bash -c cd\\ \\\\\\/bar\\ \\&\\&\\ ab",
         "cd",
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }],
     volumes => [{
       name => 'dockersock',
@@ -2248,6 +2273,10 @@ for (
         name => 'dockershareddir',
         path => '/var/lib/docker/shareddir',
       }],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
       commands => [
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'a\\b',
@@ -2280,6 +2309,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }],
     volumes => [{
       name => 'dockersock',
@@ -2310,6 +2340,10 @@ for (
       commands => [
         "aaa",
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }, {
       name => 'cleanup--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2320,6 +2354,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }],
   }}}, 'droneci build cleanup'],
   [{droneci => {
@@ -2362,6 +2397,10 @@ for (
         name => 'dockershareddir',
         path => '/var/lib/docker/shareddir',
       }],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
       commands => [
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'a',
@@ -2383,6 +2422,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }, {
       name => 'cleanup-nested',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2401,6 +2441,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }, {
       name => 'cleanup--a',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2418,6 +2459,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }],
     volumes => [{
       name => 'dockersock',
@@ -2448,6 +2490,10 @@ for (
       commands => [
         "aaa",
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }, {
       name => 'failed--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2457,6 +2503,7 @@ for (
       when => {
         status => ['failure'],
       },
+      failure => 'ignore',
     }, {
       name => 'cleanup--default',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2467,6 +2514,7 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }],
   }}}, 'droneci build failed'],
   [{droneci => {tests => [
@@ -2490,6 +2538,10 @@ for (
       commands => [
         "aaa",
       ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2499,6 +2551,7 @@ for (
       when => {
         status => ['failure'],
       },
+      failure => 'ignore',
     }, {
       name => 'failed--b',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2507,6 +2560,52 @@ for (
       ],
       when => {
         status => ['failure'],
+      },
+      failure => 'ignore',
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+    }],
+  }}}, 'droneci build failed rules'],
+  [{droneci => {build => ["x"], tests => [
+    "aaa"
+  ], cleanup => [
+    "foo bar",
+    "baz"
+  ], artifacts => 1}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'mkdir -p /drone/src/local/ciconfig',
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "x",
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
       },
     }, {
       name => 'cleanup--default',
@@ -2518,8 +2617,108 @@ for (
       when => {
         status => ['failure', 'success'],
       },
+      failure => 'ignore',
     }],
-  }}}, 'droneci build failed rules'],
+  }}}, 'droneci build cleanup artifacts'],
+  [{droneci => {
+    docker => {nested => 1},
+    artifacts => 1,
+    build => ["x"],
+    tests => ['a'],
+    cleanup => {
+      "b" => {commands => ["y"]},
+    },
+  }} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        "mkdir -p /drone/src/local/ciconfig",
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash},
+        "x",
+      ]
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        'a',
+      ],
+    }, {
+      name => 'cleanup--b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'y',
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+    }, {
+      name => 'cleanup-nested',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'docker stop `cat /drone/src/local/ciconfig/dockername`',
+        'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+    }],
+    volumes => [{
+      name => 'dockersock',
+      host => {path => '/var/run/docker.sock'},
+    }, {
+      name => 'dockershareddir',
+      host => {path => '/var/lib/docker/shareddir'},
+    }],
+  }}}, 'droneci docker nested cleanup artifacts'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml

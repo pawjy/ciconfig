@@ -3114,13 +3114,20 @@ my $Platforms = {
           $step->{name} = $rule->{name};
           $step->{image} = 'quay.io/wakaba/docker-perl-app-base';
           $step->{commands} = [];
+          if ($args{test}) {
+            $step->{environment}->{CIRCLE_NODE_TOTAL} = "1";
+            $step->{environment}->{CIRCLE_NODE_INDEX} = "0";
+          }
           $step->{when}->{status} = ['failure', 'success']
               if $args{cleanup};
           $step->{when}->{status} = ['failure']
               if $args{failed};
+          $step->{failure} = 'ignore' if $args{cleanup} or $args{failed};
 
-          push @{$step->{commands}}, map { droneci_step $_ }
-              @$init_commands, @{$rule->{commands}};
+          push @{$step->{commands}},
+              map { map { droneci_step $_ } $_->($rule->{name}) } @$init_commands;
+          push @{$step->{commands}},
+              map { droneci_step $_ } @{$rule->{commands}};
           push @{$step->{volumes} ||= []}, @$volumes if @$volumes;
         } # $rule
         return $other_rules;
@@ -3132,6 +3139,8 @@ my $Platforms = {
       $bstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
       $bstep->{commands} = [];
 
+      my $bcommands = [];
+      my $with_artifacts = delete $json->{_artifacts};
       my $cleanup_rules = [];
       if (my $dd = delete $json->{_docker}) {
         push @$volumes, {
@@ -3152,21 +3161,28 @@ my $Platforms = {
             name => 'dockershareddir',
             host => {path => '/var/lib/docker/shareddir'},
           };
-          my $path = '/var/lib/docker/shareddir/' . rand;
           push @{$bstep->{commands}}, map { droneci_step $_ }
               'mkdir -p /drone/src/local/ciconfig',
-              q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
-              'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`';
-        }
-
-        push @$init_commands, {
+              q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir};
+          unless ($with_artifacts) {
+            push @{$bstep->{commands}}, map { droneci_step $_ }
+                'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`';
+          }
+        } else { # shared dir
+          if ($with_artifacts) {
+            push @{$bstep->{commands}}, map { droneci_step $_ }
+                'mkdir -p /drone/src/local/ciconfig',
+                q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir};
+          }
+        } # shared dir
+        
+        push @$init_commands, sub { return {
           command => 'perl local/bin/pmbp.pl --install-commands docker',
           wd => '/app',
-        };
-        push @{$bstep->{commands}}, map { droneci_step $_ } @$init_commands;
+        } };
 
         if ($dd->{with_nested}) {
-          push @{$bstep->{commands}}, map { droneci_step $_ }
+          push @$bcommands,
               q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
               'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash';
 
@@ -3175,8 +3191,27 @@ my $Platforms = {
               'docker stop `cat /drone/src/local/ciconfig/dockername`',
               'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`';
         }
-      } # _docker
+      } else { # not _docker
+        if ($with_artifacts) {
+          push @{$bstep->{commands}},
+              'mkdir -p /drone/src/local/ciconfig',
+              q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir};
+        }
+      } # not _docker
+      if ($with_artifacts) {
+        push  @$init_commands, sub {
+          my $name = shift;
+          return () if $name =~ /^failed-/ or $name =~ /^cleanup-/;
+          return (
+            'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/' . $name,
+            'mkdir -p $CIRCLE_ARTIFACTS',
+          );
+        };
+      }
 
+      push @{$bstep->{commands}},
+          map { map { droneci_step $_ } $_->('build') } @$init_commands;
+      push @{$bstep->{commands}}, map { droneci_step $_ } @$bcommands;
       for (sort { $a cmp $b } keys %{$json->{_build_steps}}) {
         push @{$bstep->{commands}}, map {
           droneci_step $_;
@@ -3187,7 +3222,7 @@ my $Platforms = {
 
       {
         my $rules = delete $json->{_test_rules} || [];
-        $rules = $insert_step->($rules);
+        $rules = $insert_step->($rules, test => 1);
         die if @$rules;
       }
 
@@ -3580,6 +3615,13 @@ $Options->{'droneci', 'cleanup'} = {
       push @{$_[0]->{_cleanup_rules} ||= []}, {%$rule,
                                                name => 'cleanup--' . $_};
     }
+  },
+};
+
+$Options->{'droneci', 'artifacts'} = {
+  set => sub {
+    return unless $_[1];
+    $_[0]->{_artifacts} = {};
   },
 };
 
