@@ -3016,6 +3016,7 @@ my $Platforms = {
       my $volumes = [];
       my $init_commands = [];
       my $step_names = {build => ['build']};
+      my $group_step_names = {};
       my $insert_step = sub {
         my ($rules, %args) = @_;
         my $other_rules = [];
@@ -3052,6 +3053,12 @@ my $Platforms = {
                  $args{phase} eq 'failed';
           push @{$step_names->{$args{phase}} ||= []}, $step->{name};
           $step->{depends_on} = [map { @{$step_names->{$_} or []} } @{$args{prev_phases} or []}];
+          if (defined $rule->{group}) {
+            push @{$step->{depends_on}}, @{$group_step_names->{$rule->{group}} or []};
+            push @{$group_step_names->{$rule->{group}} ||= []}, $step->{name};
+          }
+          my $found = {};
+          $step->{depends_on} = [grep { not $found->{$_}++ } @{$step->{depends_on}}];
 
           if (defined $rule->{branches}) {
             $step->{when}->{branch} = [sort { $a cmp $b } @{$rule->{branches}}];
