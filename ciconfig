@@ -3101,6 +3101,7 @@ my $Platforms = {
 
       my $volumes = [];
       my $init_commands = [];
+      my $step_names = {};
       my $insert_step = sub {
         my ($rules, %args) = @_;
         my $other_rules = [];
@@ -3114,15 +3115,23 @@ my $Platforms = {
           $step->{name} = $rule->{name};
           $step->{image} = 'quay.io/wakaba/docker-perl-app-base';
           $step->{commands} = [];
-          if ($args{test}) {
+          if ($args{phase} eq 'test') {
             $step->{environment}->{CIRCLE_NODE_TOTAL} = "1";
             $step->{environment}->{CIRCLE_NODE_INDEX} = "0";
           }
           $step->{when}->{status} = ['failure', 'success']
-              if $args{cleanup};
+              if $args{phase} eq 'cleanup1' or
+                 $args{phase} eq 'cleanup2' or
+                 $args{phase} eq 'cleanup3';
           $step->{when}->{status} = ['failure']
-              if $args{failed};
-          $step->{failure} = 'ignore' if $args{cleanup} or $args{failed};
+              if $args{phase} eq 'failed';
+          $step->{failure} = 'ignore'
+              if $args{phase} eq 'cleanup1' or
+                 $args{phase} eq 'cleanup2' or
+                 $args{phase} eq 'cleanup3' or
+                 $args{phase} eq 'failed';
+          push @{$step_names->{$args{phase}} ||= []}, $step->{name};
+          $step->{depends_on} = ['build', map { @{$step_names->{$_} or []} } @{$args{prev_phases} or []}];
 
           push @{$step->{commands}},
               map { map { droneci_step $_ } $_->($rule->{name}) } @$init_commands;
@@ -3222,30 +3231,40 @@ my $Platforms = {
 
       {
         my $rules = delete $json->{_test_rules} || [];
-        $rules = $insert_step->($rules, test => 1);
+        $rules = $insert_step->($rules, phase => 'test');
         die if @$rules;
       }
 
       {
         my $rules = delete $json->{_deploy_rules} || [];
-        $rules = $insert_step->($rules);
+        $rules = $insert_step->($rules, phase => 'deploy',
+                                prev_phases => [qw(test)]);
         die if @$rules;
       }
       
       {
         my $rules = delete $json->{_failed_rules} || [];
-        $rules = $insert_step->($rules, failed => 1);
+        $rules = $insert_step->($rules, phase => 'failed',
+                                prev_phases => [qw(test deploy)]);
         die if @$rules;
       }
 
       {
         my $crules = delete $json->{_cleanup_rules} || [];
-        $crules = $insert_step->($crules, cleanup => 1, before_nested => 1);
+        $crules = $insert_step->($crules, phase => 'cleanup1',
+                                 prev_phases => [qw(test deploy failed)],
+                                 before_nested => 1);
         
-        my $cleanup_rules = $insert_step->($cleanup_rules, cleanup => 1);
+        my $cleanup_rules = $insert_step->($cleanup_rules,
+                                           phase => 'cleanup2',
+                                           prev_phases => [qw(test deploy 
+                                                              failed
+                                                              cleanup1)]);
         die if @$cleanup_rules;
         
-        $crules = $insert_step->($crules, cleanup => 1);
+        $crules = $insert_step->($crules, phase => 'cleanup3',
+                                 prev_phases => [qw(test deploy failed
+                                                    cleanup1 cleanup2)]);
         die if @$crules;
       }
     }, # set
