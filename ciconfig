@@ -3228,9 +3228,9 @@ my $Platforms = {
         }
       } # not _docker
       if ($with_artifacts) {
-        push  @$init_commands, sub {
+        push @$init_commands, sub {
           my $name = shift;
-          return () if $name =~ /^failed-/ or $name =~ /^cleanup-/;
+          return () if $name =~ /^cleanup-/;
           return (
             'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/' . $name,
             'mkdir -p $CIRCLE_ARTIFACTS',
