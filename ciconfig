@@ -2685,6 +2685,9 @@ sub droneci_step ($) {
   my ($input) = @_;
   my $outputs = [];
   if (ref $input) {
+    if ($input->{awscli}) {
+      $input->{command} = install_awscli_command;
+    }
     my $cmd = $input->{command};
     die "No |command|" unless defined $cmd;
     if (defined $input->{wd}) {
@@ -3101,12 +3104,18 @@ my $Platforms = {
 
       my $volumes = [];
       my $init_commands = [];
-      my $step_names = {};
+      my $step_names = {build => ['build']};
       my $insert_step = sub {
         my ($rules, %args) = @_;
         my $other_rules = [];
         for my $rule (sort { $a->{name} cmp $b->{name} } @$rules) {
           if ($args{before_nested} and $rule->{after_nested}) {
+            push @$other_rules, $rule;
+            next;
+          } elsif ($args{buildless} and not $rule->{buildless}) {
+            push @$other_rules, $rule;
+            next;
+          } elsif ($args{testless} and not $rule->{testless}) {
             push @$other_rules, $rule;
             next;
           }
@@ -3131,7 +3140,11 @@ my $Platforms = {
                  $args{phase} eq 'cleanup3' or
                  $args{phase} eq 'failed';
           push @{$step_names->{$args{phase}} ||= []}, $step->{name};
-          $step->{depends_on} = ['build', map { @{$step_names->{$_} or []} } @{$args{prev_phases} or []}];
+          $step->{depends_on} = [map { @{$step_names->{$_} or []} } @{$args{prev_phases} or []}];
+
+          if (defined $rule->{branches}) {
+            $step->{when}->{branch} = [sort { $a cmp $b } @{$rule->{branches}}];
+          }
 
           push @{$step->{commands}},
               map { map { droneci_step $_ } $_->($rule->{name}) } @$init_commands;
@@ -3231,39 +3244,46 @@ my $Platforms = {
 
       {
         my $rules = delete $json->{_test_rules} || [];
-        $rules = $insert_step->($rules, phase => 'test');
+        $rules = $insert_step->($rules, phase => 'test',
+                                prev_phases => [qw(build)]);
         die if @$rules;
       }
 
       {
-        my $rules = delete $json->{_deploy_rules} || [];
-        $rules = $insert_step->($rules, phase => 'deploy',
-                                prev_phases => [qw(test)]);
-        die if @$rules;
+        my $drules = delete $json->{_deploy_rules} || [];
+        $drules = $insert_step->($drules, phase => 'deploy',
+                                 prev_phases => [],
+                                 buildless => 1);
+        $drules = $insert_step->($drules, phase => 'deploy',
+                                 prev_phases => [qw(build)],
+                                 testless => 1);
+        $drules = $insert_step->($drules, phase => 'deploy',
+                                 prev_phases => [qw(build test)]);
+        die if @$drules;
       }
       
       {
         my $rules = delete $json->{_failed_rules} || [];
         $rules = $insert_step->($rules, phase => 'failed',
-                                prev_phases => [qw(test deploy)]);
+                                prev_phases => [qw(build test deploy)]);
         die if @$rules;
       }
 
       {
         my $crules = delete $json->{_cleanup_rules} || [];
         $crules = $insert_step->($crules, phase => 'cleanup1',
-                                 prev_phases => [qw(test deploy failed)],
+                                 prev_phases => [qw(build test deploy failed)],
                                  before_nested => 1);
         
         my $cleanup_rules = $insert_step->($cleanup_rules,
                                            phase => 'cleanup2',
-                                           prev_phases => [qw(test deploy 
-                                                              failed
+                                           prev_phases => [qw(build test
+                                                              deploy failed
                                                               cleanup1)]);
         die if @$cleanup_rules;
         
         $crules = $insert_step->($crules, phase => 'cleanup3',
-                                 prev_phases => [qw(test deploy failed
+                                 prev_phases => [qw(build test deploy failed
                                                     cleanup1 cleanup2)]);
         die if @$crules;
       }
@@ -3530,6 +3550,9 @@ $Options->{'droneci', 'tests'} = {
       if (ref $rule eq 'ARRAY') {
         $rule = {commands => $rule};
       }
+      if (defined $rule->{branch}) {
+        push @{$rule->{branches} ||= []}, $rule->{branch};
+      }
       push @{$_[0]->{_test_rules} ||= []}, {%$rule, name => 'test--' . $_};
     }
   },
@@ -3555,6 +3578,36 @@ $Options->{'circleci', 'tested_branches'} = {
   },
 };
 
+$Options->{'droneci', 'make_deploy_branches'} = {
+  set => sub {
+    for (@{$_[1]}) {
+      my $branch;
+      my $buildless;
+      my $testless;
+      my $awscli;
+      if (ref $_) {
+        $branch = $_->{name};
+        $buildless = $_->{buildless};
+        $testless = $_->{testless} || $buildless;
+        $awscli = $_->{awscli};
+      } else {
+        $branch = $_;
+      }
+      die "Bad name |$branch|" unless length $branch;
+      push @{$_[0]->{_deploy_rules} ||= []}, {
+        name => 'deploy-make--' . $branch,
+        buildless => $buildless,
+        testless => $testless,
+        commands => [
+          ($awscli ? {awscli => 1} : ()),
+          "make deploy-$branch",
+        ],
+        branches => [$branch],
+      };
+    }
+  },
+};
+
 $Options->{'circleci', 'make_deploy_branches'} = {
   set => sub {
     my $has_bg = !! $_[0]->{_build_generated_files};
@@ -3575,6 +3628,27 @@ $Options->{'circleci', 'make_deploy_branches'} = {
       push @{$_[0]->{$testless ? $buildless ? '_soon_deploy_jobs' : '_early_deploy_jobs' : $has_bg ? '_deploy_jobs' : '_deploy'}->{$branch} ||= []},
           ($awscli ? {awscli => 1} : ()),
           "make deploy-$branch";
+    }
+  },
+};
+
+$Options->{'droneci', 'deploy'} = {
+  set => sub {
+    my $steps = $_[1];
+    if (not ref $steps eq 'HASH') {
+      $steps = {default => $steps};
+    }
+    
+    for (sort { $a cmp $b } keys %$steps) {
+      my $rule = $steps->{$_};
+      if (ref $rule eq 'ARRAY') {
+        $rule = {commands => $rule};
+      }
+      if (defined $rule->{branch}) {
+        push @{$rule->{branches} ||= []}, $rule->{branch};
+      }
+      $rule->{branches} //= ['master'];
+      push @{$_[0]->{_deploy_rules} ||= []}, {%$rule, name => 'deploy--' . $_};
     }
   },
 };
@@ -3614,7 +3688,8 @@ $Options->{'droneci', 'failed'} = {
         $rule = {commands => $rule};
       }
       push @{$_[0]->{_failed_rules} ||= []}, {%$rule,
-                                              name => 'failed--' . $_};
+                                              name => 'failed--' . $_,
+                                              branches => undef};
     }
   },
 };
@@ -3632,7 +3707,8 @@ $Options->{'droneci', 'cleanup'} = {
         $rule = {commands => $rule};
       }
       push @{$_[0]->{_cleanup_rules} ||= []}, {%$rule,
-                                               name => 'cleanup--' . $_};
+                                               name => 'cleanup--' . $_,
+                                               branches => undef};
     }
   },
 };
