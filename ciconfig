@@ -3010,15 +3010,39 @@ my $Platforms = {
       $json->{name} = 'default';
       $json->{workspace}->{path} = '/drone/src';
 
+      my $volumes = [];
+      my $init_commands = [];
+      my $insert_step = sub {
+        my ($rules, %args) = @_;
+        my $other_rules = {};
+        for my $key (sort { $a cmp $b } keys %$rules) {
+          my $rule = $rules->{$key};
+          if ($args{before_nested} and $rule->{after_nested}) {
+            $other_rules->{$key} = $rule;
+            next;
+          }
+          my $step = {};
+          push @{$json->{steps} ||= []}, $step;
+          $step->{name} = $args{name}->($key);
+          $step->{image} = 'quay.io/wakaba/docker-perl-app-base';
+          $step->{commands} = [];
+          $step->{when}->{status} = ['failure', 'success']
+              if $args{cleanup};
+
+          push @{$step->{commands}}, map { droneci_step $_ }
+              @$init_commands, @{$rule->{commands}};
+          push @{$step->{volumes} ||= []}, @$volumes if @$volumes;
+        }
+        return $other_rules;
+      }; # $insert_step
+      
       my $bstep = {};
       push @{$json->{steps} ||= []}, $bstep;
       $bstep->{name} = 'build';
       $bstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
       $bstep->{commands} = [];
 
-      my $volumes = [];
-      my $init_commands = [];
-      my $cleanup_steps = [];
+      my $cleanup_rules = {};
       if (my $dd = delete $json->{_docker}) {
         push @$volumes, {
           name => 'dockersock',
@@ -3056,18 +3080,10 @@ my $Platforms = {
               q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
               'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash';
 
-          my $cstep = {};
-          push @$cleanup_steps, $cstep;
-          $cstep->{name} = 'cleanup-nested';
-          $cstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
-          $cstep->{commands} = [];
-          $cstep->{when}->{status} = ['failure', 'success'];
-
-          push @{$cstep->{commands}}, map { droneci_step $_ }
-              @$init_commands,
+          $cleanup_rules->{nested} = {commands => []};
+          push @{$cleanup_rules->{nested}->{commands}},
               'docker stop `cat /drone/src/local/ciconfig/dockername`',
               'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`';
-          push @{$cstep->{volumes} ||= []}, @$volumes;
         }
       } # _docker
 
@@ -3107,22 +3123,22 @@ my $Platforms = {
       }
       delete $json->{_deploy_steps};
 
-      for (sort { $a cmp $b } keys %{$json->{_cleanup_steps} or {}}) {
-        my $cstep = {};
-        push @{$json->{steps} ||= []}, $cstep;
-        $cstep->{name} = 'cleanup-' . $_;
-        $cstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
-        $cstep->{commands} = [];
-        $cstep->{when}->{status} = ['failure', 'success'];
-
-        push @{$cstep->{commands}}, map {
-          droneci_step $_;
-        } @{$json->{_cleanup_steps}->{$_}};
-        push @{$cstep->{volumes} ||= []}, @$volumes if @$volumes;
+      {
+        my $crules = delete $json->{_cleanup_rules};
+        $crules = $insert_step->($crules, name => sub {
+                                   return 'cleanup--' . $_[0];
+                                 }, cleanup => 1, before_nested => 1);
+        
+        my $cleanup_rules = $insert_step->($cleanup_rules, name => sub {
+                                             return 'cleanup-' . $_[0];
+                                           }, cleanup => 1);
+        die if keys %$cleanup_rules;
+        
+        $crules = $insert_step->($crules, name => sub {
+                                   return 'cleanup--' . $_[0];
+                                 }, cleanup => 1);
+        die if keys %$crules;
       }
-      delete $json->{_cleanup_steps};
-
-      push @{$json->{steps} ||= []}, @$cleanup_steps;
     }, # set
   },
 }; # $Platforms
@@ -3453,12 +3469,17 @@ $Options->{'circleci', 'deploy_branch'} = {
 
 $Options->{'droneci', 'cleanup'} = {
   set => sub {
-    if (ref $_[1] eq 'HASH') {
-      for (keys %{$_[1]}) {
-        push @{$_[0]->{_cleanup_steps}->{$_} ||= []}, @{$_[1]->{$_}};
+    my $steps = $_[1];
+    if (not ref $steps eq 'HASH') {
+      $steps = {default => $steps};
+    }
+    
+    for (keys %$steps) {
+      my $rule = $steps->{$_};
+      if (ref $rule eq 'ARRAY') {
+        $rule = {commands => $rule};
       }
-    } else {
-      push @{$_[0]->{_cleanup_steps}->{default} ||= []}, @{$_[1]};
+      $_[0]->{_cleanup_rules}->{$_} = $rule;
     }
   },
 };
