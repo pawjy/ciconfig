@@ -2142,6 +2142,71 @@ for (
       when => {branch => ['c', 'xb', 'yb']},
     }],
   }}}, 'droneci build tests 2'],
+  [{droneci => {build => [
+  ], tests => {"a" => {"commands" => [
+    "foo bar",
+  ], "group" => "ab"}, "b" => {
+    "commands" => ["x"],
+    group => 'ab',
+  }, "c" => {commands => ["d"]}, "d" => {
+    commands => ["e"],
+    group => 'f',
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'test--b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build test--a)],
+    }, {
+      name => 'test--c',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "d",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'test--d',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "e",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }],
+  }}}, 'droneci build test groups'],
   [{droneci => {docker => 1}} => {'.drone.yml' => {json => {
     kind => 'pipeline',
     type => 'docker',
