@@ -2095,6 +2095,53 @@ for (
       depends_on => [qw(build)],
     }],
   }}}, 'droneci build tests 2'],
+  [{droneci => {build => [
+    "aaa"
+  ], tests => {"a" => {"commands" => [
+    "foo bar",
+    "baz"
+  ], "branch" => "ab"}, "b" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['ab']},
+    }, {
+      name => 'test--b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['c', 'xb', 'yb']},
+    }],
+  }}}, 'droneci build tests 2'],
   [{droneci => {docker => 1}} => {'.drone.yml' => {json => {
     kind => 'pipeline',
     type => 'docker',
@@ -2747,6 +2794,332 @@ for (
       host => {path => '/var/lib/docker/shareddir'},
     }],
   }}}, 'droneci docker nested cleanup artifacts'],
+  [{droneci => {tests => [
+    "aaa"
+  ], deploy => [
+    "foo bar",
+    "baz"
+  ], "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz",
+      ],
+      depends_on => [qw(build test--default)],
+      when => {branch => ['master']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy--default)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci deploy'],
+  [{droneci => {tests => [
+    "aaa"
+  ], deploy => {"a" => {"commands" => [
+    "foo bar",
+    "baz"
+  ], "branch" => "ab"}, "b" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz",
+      ],
+      depends_on => [qw(build test--default)],
+      when => {branch => ['ab']},
+    }, {
+      name => 'deploy--b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      depends_on => [qw(build test--default)],
+      when => {branch => ['c', 'xb', 'yb']},
+    }],
+  }}}, 'droneci deploy branches'],
+  [{droneci => {tests => [
+    "aaa"
+  ], deploy => {"b" => {"commands" => [
+    "foo bar",
+  ], "buildless" => 1}, "c" => {"commands" => [
+    "baz",
+  ], "testless" => 1}}, "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy--b',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+      ],
+      depends_on => [],
+      when => {branch => ['master']},
+    }, {
+      name => 'deploy--c',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "baz",
+      ],
+      depends_on => [qw(build)],
+      when => {branch => ['master']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy--b deploy--c)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci buildless testless deploy'],
+  [{droneci => {tests => [
+    "aaa"
+  ], make_deploy_branches => ["a", "bb"], "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-make--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "make deploy-a",
+      ],
+      depends_on => ['build', 'test--default'],
+      when => {branch => ['a']},
+    }, {
+      name => 'deploy-make--bb',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "make deploy-bb",
+      ],
+      depends_on => [qw(build test--default)],
+      when => {branch => ['bb']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy-make--a deploy-make--bb)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci make_deploy_branches'],
+  [{droneci => {tests => [
+    "aaa"
+  ], make_deploy_branches => [{"name"=>"a","buildless"=>1},
+                              {"name"=>"bb","testless"=>1}],
+                "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-make--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "make deploy-a",
+      ],
+      depends_on => [],
+      when => {branch => ['a']},
+    }, {
+      name => 'deploy-make--bb',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "make deploy-bb",
+      ],
+      depends_on => ['build'],
+      when => {branch => ['bb']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy-make--a deploy-make--bb)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci make_deploy_branches less'],
+  [{droneci => {tests => [
+    "aaa"
+  ], make_deploy_branches => [{"name"=>"a","buildless"=>1},
+                              {"name"=>"bb","testless"=>1, awscli=>1}],
+                "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-make--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "make deploy-a",
+      ],
+      depends_on => [],
+      when => {branch => ['a']},
+    }, {
+      name => 'deploy-make--bb',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
+                 "aws --version",
+        "make deploy-bb",
+      ],
+      depends_on => ['build'],
+      when => {branch => ['bb']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy-make--a deploy-make--bb)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci make_deploy_branches awscli'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
