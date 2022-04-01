@@ -555,15 +555,44 @@ my $Platforms = {
           my $found = {};
           $step->{depends_on} = [grep { not $found->{$_}++ } @{$step->{depends_on}}];
 
+          my $fstep = {};
+          if (@{$rule->{failed} or []}) {
+            push @{$json->{steps} ||= []}, $fstep;
+            $fstep->{name} = 'failed-' . $step->{name};
+            $fstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+            $fstep->{commands} = [];
+            if ($args{phase} eq 'test') {
+              $fstep->{environment}->{CIRCLE_NODE_TOTAL} = "1";
+              $fstep->{environment}->{CIRCLE_NODE_INDEX} = "0";
+            }
+            $fstep->{when}->{status} = ['failure'];
+            $fstep->{failure} = 'ignore';
+            push @{$step_names->{$args{phase}} ||= []}, $fstep->{name};
+            $fstep->{depends_on} = [$step->{name}];
+            if (defined $rule->{group}) {
+              push @{$group_step_names->{$rule->{group}} ||= []}, $fstep->{name};
+            }
+          } # failed
+
           if (defined $rule->{branches}) {
+            $fstep->{when}->{branch} =
             $step->{when}->{branch} = [sort { $a cmp $b } @{$rule->{branches}}];
           }
 
           push @{$step->{commands}},
-              map { map { droneci_step $_ } $_->($rule->{name}) } @$init_commands;
+              map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
           push @{$step->{commands}},
               map { droneci_step $_ } @{$rule->{commands}};
+
+          if (defined $fstep->{name}) {
+            push @{$fstep->{commands}},
+                map { map { droneci_step $_ } $_->($fstep->{name}) } @$init_commands;
+            push @{$fstep->{commands}},
+                map { droneci_step $_ } @{$rule->{failed} or []};
+          }
+          
           push @{$step->{volumes} ||= []}, @$volumes if @$volumes;
+          push @{$fstep->{volumes} ||= []}, @$volumes if @$volumes;
         } # $rule
         return $other_rules;
       }; # $insert_step
