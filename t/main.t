@@ -3345,6 +3345,49 @@ for (
       when => {branch => ['bb']},
     }],
   }}}, 'droneci make_deploy_branches nested'],
+  [{droneci => {tests => [
+    "aaa"
+  ], make_deploy_branches => [{
+    "name"=>"bb","nested"=>{
+      envs => ['A'],
+    },
+    secrets => ['X', 'Y'],
+    shared_dir => 1, wd => 'foop',
+  }]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-make--bb',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      environment => {
+        X => {from_secret => 'X'},
+        Y => {from_secret => 'Y'},
+      },
+      commands => [
+        'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
+      ],
+      depends_on => ['build', 'test--default'],
+      when => {branch => ['bb']},
+    }],
+  }}}, 'droneci make_deploy_branches secrets'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml

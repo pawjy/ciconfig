@@ -3040,6 +3040,9 @@ my $Platforms = {
             $step->{environment}->{CIRCLE_NODE_TOTAL} = "1";
             $step->{environment}->{CIRCLE_NODE_INDEX} = "0";
           }
+          for (@{$rule->{secrets} or []}) {
+            $step->{environment}->{$_} = {from_secret => $_};
+          }
           $step->{when}->{status} = ['failure', 'success']
               if $args{phase} eq 'cleanup1' or
                  $args{phase} eq 'cleanup2' or
@@ -3536,6 +3539,7 @@ $Options->{'droneci', 'make_deploy_branches'} = {
         name => 'deploy-make--' . $branch,
         buildless => $x->{buildless},
         testless => $x->{testless},
+        secrets => $x->{secrets},
         commands => [
           ($x->{awscli} ? {awscli => 1,
                            nested => $x->{nested}} : ()),
