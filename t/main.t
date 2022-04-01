@@ -2718,6 +2718,65 @@ for (
                         failed--a failed--b)],
     }],
   }}}, 'droneci build failed rules'],
+  [{droneci => {tests => {"a" => {
+    "commands" => [
+      "aaa"
+    ],
+    "failed" => ["x"],
+  }}, cleanup => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'failed-test--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "x"
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(test--a)],
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--a
+                        failed-test--a)],
+    }],
+  }}}, 'droneci test-failed'],
   [{droneci => {build => ["x"], tests => [
     "aaa"
   ], cleanup => [
