@@ -2517,9 +2517,9 @@ sub install_awscli_command () {
   return join "\n",
         "(((sudo apt-cache search python-dev | grep ^python-dev) || ".
            "sudo apt-get update) && ".
-         "sudo apt-get install -y python-dev) || ".
-        "(sudo apt-get update && sudo apt-get install -y python-dev)",
-        "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade",
+         "(sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || ".
+        "(sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));",
+        "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;",
         "aws --version";
 } # install_awscli_command
 
@@ -3139,9 +3139,9 @@ my $Platforms = {
         }
       } # not _docker
       if ($with_artifacts) {
-        push  @$init_commands, sub {
+        push @$init_commands, sub {
           my $name = shift;
-          return () if $name =~ /^failed-/ or $name =~ /^cleanup-/;
+          return () if $name =~ /^cleanup-/;
           return (
             'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/' . $name,
             'mkdir -p $CIRCLE_ARTIFACTS',

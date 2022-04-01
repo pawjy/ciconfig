@@ -12,9 +12,9 @@ sub install_awscli_command () {
   return join "\n",
         "(((sudo apt-cache search python-dev | grep ^python-dev) || ".
            "sudo apt-get update) && ".
-         "sudo apt-get install -y python-dev) || ".
-        "(sudo apt-get update && sudo apt-get install -y python-dev)",
-        "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade",
+         "(sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || ".
+        "(sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));",
+        "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;",
         "aws --version";
 } # install_awscli_command
 
