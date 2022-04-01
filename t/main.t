@@ -936,9 +936,11 @@ for (
       steps => [
         'checkout',
         {"attach_workspace" => {"at" => "./"}},
-        {deploy => {command => "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
-                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
-                 "aws --version"}},
+        {deploy => {command =>
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version"
+               }},
         {deploy => {command => 'make deploy-master'}},
       ],
     }, early_deploy_devel => {
@@ -946,9 +948,11 @@ for (
       steps => [
         'checkout',
         {"attach_workspace" => {"at" => "./"}},
-        {deploy => {command => "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
-                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
-                 "aws --version"}},
+        {deploy => {command =>
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version"
+               }},
         {deploy => {command => 'make deploy-devel'}},
       ],
     }, before_tests => {
@@ -1172,9 +1176,11 @@ for (
       steps => [
         'checkout',
         {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
-        {run => {command => "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
-                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
-                 "aws --version"}},
+        {run => {command =>
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version"
+               }},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
@@ -1191,9 +1197,11 @@ for (
         'checkout',
         {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
-        {deploy => {command => "if [ \"\${CIRCLE_BRANCH}\" == 'x' ]; then\ntrue\n(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
-                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
-                 "aws --version\nfi"}},
+        {deploy => {command => "if [ \"\${CIRCLE_BRANCH}\" == 'x' ]; then\ntrue\n" .
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version"
+                 . "\nfi"}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
@@ -3216,8 +3224,8 @@ for (
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
-        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
-                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "make deploy-bb",
       ],
@@ -3267,9 +3275,11 @@ for (
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [
-        'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c ' . quotemeta ("(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && sudo apt-get install -y python-dev) || (sudo apt-get update && sudo apt-get install -y python-dev)\n".
-                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade\n".
-                 "aws --version"),
+        'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c ' . quotemeta (
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version"
+                ),
         'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
       ],
       depends_on => ['build', 'test--default'],
