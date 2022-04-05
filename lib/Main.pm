@@ -512,6 +512,10 @@ my $Platforms = {
       my $init_commands = [];
       my $step_names = {build => ['build']};
       my $group_step_names = {};
+      my $build_branches = {};
+      my $no_build_branch = 0;
+      my $all_branches = {};
+      my $no_all_branch = 0;
       my $insert_step = sub {
         my ($rules, %args) = @_;
         my $other_rules = [];
@@ -577,9 +581,24 @@ my $Platforms = {
             }
           } # failed
 
+          my $dep_build = ! $args{buildless} && !! grep { $_ eq 'build' } @{$step->{depends_on}};
           if (defined $rule->{branches}) {
             $fstep->{when}->{branch} =
             $step->{when}->{branch} = [sort { $a cmp $b } @{$rule->{branches}}];
+            if ($dep_build) {
+              $build_branches->{$_} = 1 for @{$rule->{branches}};
+            }
+            $all_branches->{$_} = 1 for @{$rule->{branches}};
+          } elsif ($args{phase} eq 'cleanup1' or
+                   $args{phase} eq 'cleanup2' or
+                   $args{phase} eq 'cleanup3' or
+                   $args{phase} eq 'failed') {
+            if (not $no_all_branch) {
+              $step->{when}->{branch} = [sort { $a cmp $b } keys %$all_branches];
+            }
+          } else {
+            $no_build_branch = 1 if $dep_build;
+            $no_all_branch = 1;
           }
 
           push @{$step->{commands}},
@@ -651,7 +670,7 @@ my $Platforms = {
         if ($dd->{with_nested}) {
           push @$bcommands,
               q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash';
+              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash';
 
           push @$cleanup_rules, {name => 'cleanup-nested', commands => []};
           push @{$cleanup_rules->[-1]->{commands}},
@@ -705,6 +724,10 @@ my $Platforms = {
         $drules = $insert_step->($drules, phase => 'deploy',
                                  prev_phases => [qw(build test)]);
         die if @$drules;
+      }
+
+      if (not $no_build_branch) {
+        $bstep->{when}->{branch} = [sort { $a cmp $b } keys %$build_branches];
       }
       
       {
