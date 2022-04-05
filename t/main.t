@@ -1962,6 +1962,7 @@ for (
       name => 'build',
       image => 'quay.io/wakaba/docker-perl-app-base',
       commands => [],
+      when => {branch => []},
     }],
   }}}, 'droneci empty'],
   [{droneci => {"pmbp" => 1}} => {'.drone.yml' => {json => {
@@ -2003,6 +2004,7 @@ for (
         "foo bar",
         "baz"
       ],
+      when => {branch => []},
     }],
   }}}, 'droneci build'],
   [{droneci => {tests => [
@@ -2123,6 +2125,7 @@ for (
       commands => [
         "aaa",
       ],
+      when => {branch => ['ab', 'c', 'xb', 'yb']},
     }, {
       name => 'test--a',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2149,7 +2152,7 @@ for (
       depends_on => [qw(build)],
       when => {branch => ['c', 'xb', 'yb']},
     }],
-  }}}, 'droneci build tests 2'],
+  }}}, 'droneci build tests 3'],
   [{droneci => {build => [
   ], tests => {"a" => {"commands" => [
     "foo bar",
@@ -2230,6 +2233,7 @@ for (
       commands => [
         "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
       ],
+      when => {branch => []},
     }],
     volumes => [{
       name => 'dockersock',
@@ -2257,8 +2261,9 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash},
       ],
+      when => {branch => []},
     }, {
       name => 'cleanup-nested',
       image => 'quay.io/wakaba/docker-perl-app-base',
@@ -2276,6 +2281,7 @@ for (
       ],
       when => {
         status => ['failure', 'success'],
+        branch => [],
       },
       failure => 'ignore',
       depends_on => [qw(build)],
@@ -2388,7 +2394,7 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash}
       ]
     }, {
       name => 'test--default',
@@ -2516,7 +2522,7 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash}
       ]
     }, {
       name => 'test--default',
@@ -2903,7 +2909,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -d -t quay.io/wakaba/docker-perl-app-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash},
         "x",
       ]
     }, {
