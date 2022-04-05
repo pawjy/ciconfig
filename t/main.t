@@ -2783,6 +2783,73 @@ for (
                         failed-test--a)],
     }],
   }}}, 'droneci test-failed'],
+  [{droneci => {tests => {"a" => {
+    "commands" => [
+      "aaa"
+    ],
+    "failed" => ["x"],
+  }}, cleanup => [
+    "foo bar",
+    "baz"
+  ], artifacts => 1}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'mkdir -p /drone/src/local/ciconfig',
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+      ],
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'failed-test--a',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "x"
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(test--a)],
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/docker-perl-app-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--a
+                        failed-test--a)],
+    }],
+  }}}, 'droneci test-failed artifacts'],
   [{droneci => {build => ["x"], tests => [
     "aaa"
   ], cleanup => [
