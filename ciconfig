@@ -3202,7 +3202,7 @@ my $Platforms = {
 
           if (defined $fstep->{name}) {
             push @{$fstep->{commands}},
-                map { map { droneci_step $_ } $_->($fstep->{name}) } @$init_commands;
+                map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
             push @{$fstep->{commands}},
                 map { droneci_step $_ } @{$rule->{failed} or []};
           }
