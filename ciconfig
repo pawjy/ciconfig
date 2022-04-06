@@ -3067,8 +3067,15 @@ my $Platforms = {
           my $found = {};
           $step->{depends_on} = [grep { not $found->{$_}++ } @{$step->{depends_on}}];
 
+          my @r_command = @{$rule->{commands} or []};
+          my @r_failed = @{$rule->{failed} or []};
+          if (@{$rule->{cleanup} or []}) {
+            push @r_command, @{$rule->{cleanup}};
+            push @r_failed, @{$rule->{cleanup}};
+          }
+
           my $fstep = {};
-          if (@{$rule->{failed} or []}) {
+          if (@r_failed) {
             push @{$json->{steps} ||= []}, $fstep;
             $fstep->{name} = 'failed-' . $step->{name};
             $fstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
@@ -3108,14 +3115,12 @@ my $Platforms = {
 
           push @{$step->{commands}},
               map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
-          push @{$step->{commands}},
-              map { droneci_step $_ } @{$rule->{commands}};
+          push @{$step->{commands}}, map { droneci_step $_ } @r_command;
 
           if (defined $fstep->{name}) {
             push @{$fstep->{commands}},
                 map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
-            push @{$fstep->{commands}},
-                map { droneci_step $_ } @{$rule->{failed} or []};
+            push @{$fstep->{commands}}, map { droneci_step $_ } @r_failed;
           }
           
           push @{$step->{volumes} ||= []}, @$volumes if @$volumes;
