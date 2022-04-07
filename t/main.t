@@ -1514,6 +1514,37 @@ for (
       ],
     }, build => {jobs => [{'build'=>{}}]}},
   }}}],
+  [{circleci => {autobuild => 1}} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {
+      build => {
+        machine => $machine,
+        environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+        steps => [
+          'checkout',
+          {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+          {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        ],
+      },
+    },
+    workflows => {version => 2, autobuild => {
+      jobs => ['build'],
+      "triggers" => [
+        {
+          "schedule" => {
+            "cron" => "10 1 * * *",
+            "filters" => {
+              "branches" => {
+                "only" => [
+                  "master"
+                ]
+              }
+            }
+          }
+        }
+      ],
+    }, build => {jobs => [{'build'=>{}}]}},
+  }}}, 'circleci autobuild'],
   [{circleci => {
     build_generated_files => [],
     parallel => 4,
