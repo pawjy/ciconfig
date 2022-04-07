@@ -3038,7 +3038,7 @@ my $Platforms = {
           my $step = {};
           push @{$json->{steps} ||= []}, $step;
           $step->{name} = $rule->{name};
-          $step->{image} = 'quay.io/wakaba/docker-perl-app-base';
+          $step->{image} = 'quay.io/wakaba/droneci-step-base';
           $step->{commands} = [];
           if ($args{phase} eq 'test') {
             $step->{environment}->{CIRCLE_NODE_TOTAL} = "1";
@@ -3078,7 +3078,7 @@ my $Platforms = {
           if (@r_failed) {
             push @{$json->{steps} ||= []}, $fstep;
             $fstep->{name} = 'failed-' . $step->{name};
-            $fstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+            $fstep->{image} = 'quay.io/wakaba/droneci-step-base';
             $fstep->{commands} = [];
             if ($args{phase} eq 'test') {
               $fstep->{environment}->{CIRCLE_NODE_TOTAL} = "1";
@@ -3132,7 +3132,7 @@ my $Platforms = {
       my $bstep = {};
       push @{$json->{steps} ||= []}, $bstep;
       $bstep->{name} = 'build';
-      $bstep->{image} = 'quay.io/wakaba/docker-perl-app-base';
+      $bstep->{image} = 'quay.io/wakaba/droneci-step-base';
       $bstep->{commands} = [];
 
       my $bcommands = [];
@@ -3180,7 +3180,7 @@ my $Platforms = {
         if ($dd->{with_nested}) {
           push @$bcommands,
               q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash';
+              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash';
 
           push @$cleanup_rules, {name => 'cleanup-nested', commands => []};
           push @{$cleanup_rules->[-1]->{commands}},

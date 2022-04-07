@@ -1991,7 +1991,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [],
       when => {branch => []},
     }],
@@ -2003,13 +2003,13 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make test-deps",
       ],
     }, {
       name => 'test-pmbp',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make test"
       ],
@@ -2030,7 +2030,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2048,12 +2048,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2077,13 +2077,13 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2107,13 +2107,13 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz",
@@ -2125,7 +2125,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'test--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -2152,14 +2152,14 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
       when => {branch => ['ab', 'c', 'xb', 'yb']},
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz",
@@ -2172,7 +2172,7 @@ for (
       when => {branch => ['ab']},
     }, {
       name => 'test--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -2200,12 +2200,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
       ],
@@ -2216,7 +2216,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'test--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -2227,7 +2227,7 @@ for (
       depends_on => [qw(build test--a)],
     }, {
       name => 'test--c',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "d",
       ],
@@ -2238,7 +2238,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'test--d',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "e",
       ],
@@ -2256,7 +2256,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2278,7 +2278,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2292,12 +2292,12 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash},
       ],
       when => {branch => []},
     }, {
       name => 'cleanup-nested',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2337,7 +2337,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2347,7 +2347,7 @@ for (
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2411,7 +2411,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2425,11 +2425,11 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash}
       ]
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2458,7 +2458,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'cleanup-nested',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2497,12 +2497,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -2513,7 +2513,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2539,7 +2539,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2553,11 +2553,11 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash}
       ]
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2576,7 +2576,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'cleanup--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2595,7 +2595,7 @@ for (
       depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup-nested',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2615,7 +2615,7 @@ for (
       depends_on => [qw(build test--default cleanup--b)],
     }, {
       name => 'cleanup--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -2653,12 +2653,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -2669,7 +2669,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x"
       ],
@@ -2680,7 +2680,7 @@ for (
       depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2704,12 +2704,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -2720,7 +2720,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x"
       ],
@@ -2731,7 +2731,7 @@ for (
       depends_on => [qw(build test--default)],
     }, {
       name => 'failed--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "y"
       ],
@@ -2742,7 +2742,7 @@ for (
       depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2770,12 +2770,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -2786,7 +2786,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed-test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x"
       ],
@@ -2801,7 +2801,7 @@ for (
       depends_on => [qw(test--a)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2829,7 +2829,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'mkdir -p /drone/src/local/ciconfig',
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
@@ -2838,7 +2838,7 @@ for (
       ],
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -2851,7 +2851,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed-test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -2868,7 +2868,7 @@ for (
       depends_on => [qw(test--a)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2896,7 +2896,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'mkdir -p /drone/src/local/ciconfig',
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
@@ -2905,7 +2905,7 @@ for (
       ],
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -2919,7 +2919,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed-test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -2936,7 +2936,7 @@ for (
       depends_on => [qw(test--a)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -2965,7 +2965,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'mkdir -p /drone/src/local/ciconfig',
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
@@ -2974,7 +2974,7 @@ for (
       ],
     }, {
       name => 'test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -2988,7 +2988,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed-test--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -3006,7 +3006,7 @@ for (
       depends_on => [qw(test--a)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -3031,7 +3031,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'mkdir -p /drone/src/local/ciconfig',
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
@@ -3041,7 +3041,7 @@ for (
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -3054,7 +3054,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'cleanup--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz"
@@ -3078,7 +3078,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'mkdir -p /drone/src/local/ciconfig',
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
@@ -3088,7 +3088,7 @@ for (
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -3101,7 +3101,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'failed--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -3130,7 +3130,7 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -3145,12 +3145,12 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/docker-perl-app-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash},
         "x",
       ]
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -3171,7 +3171,7 @@ for (
       depends_on => [qw(build)],
     }, {
       name => 'cleanup--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -3190,7 +3190,7 @@ for (
       depends_on => [qw(build test--default)],
     }, {
       name => 'cleanup-nested',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       volumes => [{
         name => 'dockersock',
         path => '/var/run/docker.sock',
@@ -3233,12 +3233,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3249,7 +3249,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz",
@@ -3258,7 +3258,7 @@ for (
       when => {branch => ['master']},
     }, {
       name => 'failed--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -3283,12 +3283,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3299,7 +3299,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
         "baz",
@@ -3308,7 +3308,7 @@ for (
       when => {branch => ['ab']},
     }, {
       name => 'deploy--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -3333,12 +3333,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3349,7 +3349,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy--b',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "foo bar",
       ],
@@ -3357,7 +3357,7 @@ for (
       when => {branch => ['master']},
     }, {
       name => 'deploy--c',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "baz",
       ],
@@ -3365,7 +3365,7 @@ for (
       when => {branch => ['master']},
     }, {
       name => 'failed--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -3387,12 +3387,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3403,7 +3403,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy-make--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make deploy-a",
       ],
@@ -3411,7 +3411,7 @@ for (
       when => {branch => ['a']},
     }, {
       name => 'deploy-make--bb',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make deploy-bb",
       ],
@@ -3419,7 +3419,7 @@ for (
       when => {branch => ['bb']},
     }, {
       name => 'failed--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -3443,12 +3443,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3459,7 +3459,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy-make--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make deploy-a",
       ],
@@ -3467,7 +3467,7 @@ for (
       when => {branch => ['a']},
     }, {
       name => 'deploy-make--bb',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make deploy-bb",
       ],
@@ -3475,7 +3475,7 @@ for (
       when => {branch => ['bb']},
     }, {
       name => 'failed--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -3499,12 +3499,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3515,7 +3515,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy-make--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "make deploy-a",
       ],
@@ -3523,7 +3523,7 @@ for (
       when => {branch => ['a']},
     }, {
       name => 'deploy-make--bb',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
@@ -3534,7 +3534,7 @@ for (
       when => {branch => ['bb']},
     }, {
       name => 'failed--a',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "x",
       ],
@@ -3558,12 +3558,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3574,7 +3574,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy-make--bb',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c ' . quotemeta (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
@@ -3602,12 +3602,12 @@ for (
     workspace => {path => '/drone/src'},
     steps => [{
       name => 'build',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
       ],
     }, {
       name => 'test--default',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "aaa",
       ],
@@ -3618,7 +3618,7 @@ for (
       depends_on => ['build'],
     }, {
       name => 'deploy-make--bb',
-      image => 'quay.io/wakaba/docker-perl-app-base',
+      image => 'quay.io/wakaba/droneci-step-base',
       environment => {
         X => {from_secret => 'X'},
         Y => {from_secret => 'Y'},
