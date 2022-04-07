@@ -510,6 +510,7 @@ my $Platforms = {
 
       my $volumes = [];
       my $init_commands = [];
+      my $terminate_commands = [];
       my $step_names = {build => ['build']};
       my $group_step_names = {};
       my $build_branches = {};
@@ -538,9 +539,6 @@ my $Platforms = {
           if ($args{phase} eq 'test') {
             $step->{environment}->{CIRCLE_NODE_TOTAL} = "1";
             $step->{environment}->{CIRCLE_NODE_INDEX} = "0";
-          }
-          for (@{$rule->{secrets} or []}) {
-            $step->{environment}->{$_} = {from_secret => $_};
           }
           $step->{when}->{status} = ['failure', 'success']
               if $args{phase} eq 'cleanup1' or
@@ -588,6 +586,11 @@ my $Platforms = {
             }
           } # failed
 
+          for (@{$rule->{secrets} or []}, keys %{$args{secrets} or {}}) {
+            $step->{environment}->{$_} = {from_secret => $_};
+            $fstep->{environment}->{$_} = {from_secret => $_};
+          }
+
           my $dep_build = ! $args{buildless} && !! grep { $_ eq 'build' } @{$step->{depends_on}};
           if (defined $rule->{branches}) {
             $fstep->{when}->{branch} =
@@ -611,11 +614,15 @@ my $Platforms = {
           push @{$step->{commands}},
               map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
           push @{$step->{commands}}, map { droneci_step $_ } @r_command;
+          push @{$step->{commands}},
+              map { map { droneci_step $_ } $_->($step->{name}) } @$terminate_commands;
 
           if (defined $fstep->{name}) {
             push @{$fstep->{commands}},
                 map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
             push @{$fstep->{commands}}, map { droneci_step $_ } @r_failed;
+            push @{$fstep->{commands}},
+                map { map { droneci_step $_ } $_->($step->{name}) } @$terminate_commands;
           }
           
           push @{$step->{volumes} ||= []}, @$volumes if @$volumes;
@@ -633,6 +640,7 @@ my $Platforms = {
       my $bcommands = [];
       my $with_artifacts = delete $json->{_artifacts};
       my $cleanup_rules = [];
+      my $secrets = {};
       if (my $dd = delete $json->{_docker}) {
         push @$volumes, {
           name => 'dockersock',
@@ -696,8 +704,19 @@ my $Platforms = {
           return (
             'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/' . $name,
             'mkdir -p $CIRCLE_ARTIFACTS',
+            {awscli => 1},
           );
         };
+        push @$terminate_commands, sub {
+          my $name = shift;
+          return () if $name =~ /^cleanup-/;
+          return (
+            (sprintf 'aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s', $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name),
+            (sprintf 'echo "Artifacts: <%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s/>"', $with_artifacts->{web_prefix}, $name),
+          );
+        };
+        $secrets->{AWS_ACCESS_KEY_ID} = 1;
+        $secrets->{AWS_SECRET_ACCESS_KEY} = 1;
       }
 
       push @{$bstep->{commands}},
@@ -708,13 +727,20 @@ my $Platforms = {
           droneci_step $_;
         } @{$json->{_build_steps}->{$_}};
       }
+      push @{$bstep->{commands}},
+          map { map { droneci_step $_ } $_->('build') } @$terminate_commands;
       push @{$bstep->{volumes} ||= []}, @$volumes if @$volumes;
       delete $json->{_build_steps};
+
+      for (keys %$secrets) {
+        $bstep->{environment}->{$_} = {from_secret => $_};
+      }
 
       {
         my $rules = delete $json->{_test_rules} || [];
         $rules = $insert_step->($rules, phase => 'test',
-                                prev_phases => [qw(build)]);
+                                prev_phases => [qw(build)],
+                                secrets => $secrets);
         die if @$rules;
       }
 
@@ -722,12 +748,15 @@ my $Platforms = {
         my $drules = delete $json->{_deploy_rules} || [];
         $drules = $insert_step->($drules, phase => 'deploy',
                                  prev_phases => [],
-                                 buildless => 1);
+                                 buildless => 1,
+                                 secrets => $secrets);
         $drules = $insert_step->($drules, phase => 'deploy',
                                  prev_phases => [qw(build)],
-                                 testless => 1);
+                                 testless => 1,
+                                 secrets => $secrets);
         $drules = $insert_step->($drules, phase => 'deploy',
-                                 prev_phases => [qw(build test)]);
+                                 prev_phases => [qw(build test)],
+                                 secrets => $secrets);
         die if @$drules;
       }
 
@@ -738,7 +767,8 @@ my $Platforms = {
       {
         my $rules = delete $json->{_failed_rules} || [];
         $rules = $insert_step->($rules, phase => 'failed',
-                                prev_phases => [qw(build test deploy)]);
+                                prev_phases => [qw(build test deploy)],
+                                secrets => $secrets);
         die if @$rules;
       }
 
@@ -1185,7 +1215,7 @@ $Options->{'droneci', 'cleanup'} = {
 $Options->{'droneci', 'artifacts'} = {
   set => sub {
     return unless $_[1];
-    $_[0]->{_artifacts} = {};
+    $_[0]->{_artifacts} = $_[1];
   },
 };
 
