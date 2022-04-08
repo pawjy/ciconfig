@@ -2918,41 +2918,73 @@ my $Platforms = {
         
         unshift @{$job->{steps}},
             {"uses" => 'actions/checkout@v2'};
-        
+
+        my $matrix = [{experimental => \0}];
+        my $matrix_touched = 0;
+        my $extend_matrix = sub {
+          my ($name, $values) = @_;
+          my @new;
+          for my $old (@$matrix) {
+            push @new, map {
+              {%$old, $name => $_};
+            } @$values;
+          }
+          $matrix = \@new;
+          $matrix_touched = 1;
+        };
         if (defined $input->{_perl_versions}) {
           if (delete $input->{_with_macos}) {
+            $extend_matrix->('perl_version', $input->{_perl_versions});
+            $extend_matrix->('os' => ['ubuntu-latest', 'macos-latest']);
             if ($input->{_with_macos_latest_perl}) {
-              $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [(map {
-                {perl_version => $_, os => 'ubuntu-latest'};
-              } @{$input->{_perl_versions}}), (map {
-                {perl_version => $_, os => 'macos-latest'};
-              } 'latest')];
-            } else {
-              $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [(map {
-                {perl_version => $_, os => 'ubuntu-latest'};
-              } @{$input->{_perl_versions}}), (map {
-                {perl_version => $_, os => 'macos-latest'};
-              } @{$input->{_perl_versions}})];
+              for (@$matrix) {
+                if ($_->{perl_version} ne 'latest' and
+                    $_->{os} eq 'macos-latest') {
+                  $_->{experimental} = \1;
+                }
+              }
             }
           } else { # linux only
-            $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
-              {perl_version => $_};
-            } @{$input->{_perl_versions}}];
+            $extend_matrix->('perl_version', $input->{_perl_versions});
           }
+          $json->{jobs}->{test}->{strategy}->{matrix}->{include} = $matrix;
           $json->{jobs}->{test}->{env}->{PMBP_PERL_VERSION} = '${{ matrix.perl_version }}';
-          $json->{jobs}->{test}->{strategy}->{'fail-fast'} = \0;
-        } else {
+        } else { # no perl version
           if (delete $input->{_with_macos}) {
-            $json->{jobs}->{test}->{strategy}->{matrix}->{include} = [map {
-              {os => 'macos-latest'};
-            } (undef)];
-            $json->{jobs}->{test}->{strategy}->{'fail-fast'} = \0;
+            $extend_matrix->('os', ['ubuntu-latest', 'macos-latest']);
           }
+        } # perl version?
+
+        for my $name (sort { $a cmp $b } keys %{$input->{_env_matrix}}) {
+          my $values = $input->{_env_matrix}->{$name};
+          $extend_matrix->('env_' . $name, $values);
+          $json->{jobs}->{test}->{env}->{$name} = '${{ matrix.env_'.$name.' }}';
+        }
+        delete $json->{_env_matrix};
+
+        for my $v (@{$input->{_matrix_allow_failure} or []}) {
+          for my $m (@$matrix) {
+            my $matched = 1;
+            for (keys %$v) {
+              unless ($m->{$_} eq $v->{$_}) {
+                $matched = 0;
+              }
+            }
+            if ($matched) {
+              $m->{experimental} = \1;
+            }
+          }
+        } # allow failure
+
+        if ($matrix_touched) {
+          $job->{strategy}->{matrix}->{include} = $matrix;
+          $job->{strategy}->{'fail-fast'} = \0;
+          $job->{'continue-on-error'} = '${{ matrix.experimental }}';
         }
       } elsif (@$build_steps) {
         die "There are no test steps while there are build steps";
       }
-
+      
       for my $branch_name (keys %{$input->{_branch_github_deploy_jobs} or {}}) {
         ## has similar
         my $json = $output->{'.github/workflows/test.yml'} ||= {};
@@ -3373,6 +3405,21 @@ $Options->{'github', 'macos'} = {
   },
 };
 
+$Options->{'github', 'env_matrix'} = {
+  set => sub {
+    for my $name (keys %{$_[1] or {}}) {
+      my $values = [@{$_[1]->{$name} or []}];
+      $_[0]->{_env_matrix}->{$name} = $values;
+    }
+  },
+};
+
+$Options->{'github', 'matrix_allow_failure'} = {
+  set => sub {
+    push @{$_[0]->{_matrix_allow_failure} ||= []}, @{$_[1] or []};
+  },
+};
+
 $Options->{'travisci', 'notifications'} = {
   set => sub {
     return unless $_[1];
@@ -3543,6 +3590,18 @@ $Options->{'droneci', 'build'} = {
 $Options->{'circleci', 'build'} = {
   set => sub {
     push @{$_[0]->{_build} ||= []}, @{$_[1]};
+  },
+};
+
+$Options->{'github', 'tests'} = {
+  set => sub {
+    if (ref $_[1] eq 'HASH') {
+      for (keys %{$_[1]}) {
+        push @{$_[0]->{_test_steps}->{$_} ||= []}, @{$_[1]->{$_}};
+      }
+    } else {
+      push @{$_[0]->{_test_steps}->{default} ||= []}, @{$_[1]};
+    }
   },
 };
 
