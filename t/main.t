@@ -3724,7 +3724,7 @@ for (
         "baz",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['master']},
+      when => {branch => ['master'], event => ['push']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3774,7 +3774,7 @@ for (
         "baz",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['ab']},
+      when => {branch => ['ab'], event => ['push']},
     }, {
       name => 'deploy--b',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3782,7 +3782,7 @@ for (
         "x",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['c', 'xb', 'yb']},
+      when => {branch => ['c', 'xb', 'yb'], event => ['push']},
     }],
   }}}, 'droneci deploy branches'],
   [{droneci => {tests => [
@@ -3823,7 +3823,7 @@ for (
         "foo bar",
       ],
       depends_on => [],
-      when => {branch => ['master']},
+      when => {branch => ['master'], event => ['push']},
     }, {
       name => 'deploy--c',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3831,7 +3831,7 @@ for (
         "baz",
       ],
       depends_on => [qw(build)],
-      when => {branch => ['master']},
+      when => {branch => ['master'], event => ['push']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3877,7 +3877,7 @@ for (
         "make deploy-a",
       ],
       depends_on => ['build', 'test--default'],
-      when => {branch => ['a']},
+      when => {branch => ['a'], event => ['push']},
     }, {
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3885,7 +3885,7 @@ for (
         "make deploy-bb",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['bb']},
+      when => {branch => ['bb'], event => ['push']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3933,7 +3933,7 @@ for (
         "make deploy-a",
       ],
       depends_on => [],
-      when => {branch => ['a']},
+      when => {branch => ['a'], event => ['push']},
     }, {
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3941,7 +3941,7 @@ for (
         "make deploy-bb",
       ],
       depends_on => ['build'],
-      when => {branch => ['bb']},
+      when => {branch => ['bb'], event => ['push']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -3989,7 +3989,7 @@ for (
         "make deploy-a",
       ],
       depends_on => [],
-      when => {branch => ['a']},
+      when => {branch => ['a'], event => ['push']},
     }, {
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -4000,7 +4000,7 @@ for (
         "make deploy-bb",
       ],
       depends_on => ['build'],
-      when => {branch => ['bb']},
+      when => {branch => ['bb'], event => ['push']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -4053,7 +4053,7 @@ for (
         'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
       ],
       depends_on => ['build', 'test--default'],
-      when => {branch => ['bb']},
+      when => {branch => ['bb'], event => ['push']},
     }],
   }}}, 'droneci make_deploy_branches nested'],
   [{droneci => {tests => [
@@ -4096,7 +4096,7 @@ for (
         'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
       ],
       depends_on => ['build', 'test--default'],
-      when => {branch => ['bb']},
+      when => {branch => ['bb'], event => ['push']},
     }],
   }}}, 'droneci make_deploy_branches secrets'],
 ) {
