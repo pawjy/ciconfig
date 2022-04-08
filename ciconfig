@@ -3664,6 +3664,18 @@ $Options->{'circleci', 'docker-build'} = {
   },
 };
 
+$Options->{'github', 'build'} = {
+  set => sub {
+    if (ref $_[1] eq 'HASH') {
+      for (keys %{$_[1]}) {
+        push @{$_[0]->{_build_steps}->{$_} ||= []}, @{$_[1]->{$_}};
+      }
+    } else {
+      push @{$_[0]->{_build_steps}->{default} ||= []}, @{$_[1]};
+    }
+  },
+};
+
 $Options->{'droneci', 'build'} = {
   set => sub {
     if (ref $_[1] eq 'HASH') {

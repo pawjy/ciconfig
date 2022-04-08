@@ -1934,6 +1934,24 @@ for (
       ],
     }},
   }}}],
+  [{github => {
+    build => ['b'], tests => ['a'],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'b'},
+        {run => 'a'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'tests'],
   [{github => {tests => ['a']}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
     on => {push => {}},
