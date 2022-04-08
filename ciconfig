@@ -3148,6 +3148,10 @@ my $Platforms = {
             $no_all_branch = 1;
           }
 
+          if ($args{phase} eq 'deploy') {
+            $step->{when}->{event} = ['push'];
+          }
+
           push @{$step->{commands}},
               map { map { droneci_step $_ } $_->($step->{name}) } @$init_commands;
           push @{$step->{commands}}, map { droneci_step $_ } @r_command;
