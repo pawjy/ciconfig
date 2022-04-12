@@ -4215,6 +4215,184 @@ for (
       when => {branch => ['bb'], event => ['push']},
     }],
   }}}, 'droneci make_deploy_branches secrets'],
+  [{droneci => {tests => [
+    "aaa"
+  ], notification => {
+    type => 'ikachan',
+    url_prefix => q<https://foo.test/>,
+    channel => q<#foo>,
+  }, failed => ["x"], cleanup => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'failed--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "x"
+      ],
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default)],
+    }, {
+      name => 'failed-notification',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
+      ],
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default)],
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default failed--default
+                        failed-notification)],
+    }],
+  }}}, 'droneci notification'],
+  [{droneci => {tests => [
+    "aaa"
+  ], notification => {
+    type => 'ikachan',
+    url_prefix => q<https://foo.test/>,
+    channel => q<#foo>,
+  }, artifacts => {s3_bucket=>"ab",s3_prefix=>"f/",web_prefix=>"x:/"},
+  failed => ["x"], cleanup => [
+    "foo bar",
+    "baz"
+  ]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        'mkdir -p /drone/src/local/ciconfig',
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version",
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build',
+        'echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+      ],
+      environment => {
+        AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
+        AWS_SECRET_ACCESS_KEY => {from_secret => 'AWS_SECRET_ACCESS_KEY'},
+      },
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version",
+        "aaa",
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default',
+        'echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
+      ],
+      environment => {
+        AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
+        AWS_SECRET_ACCESS_KEY => {from_secret => 'AWS_SECRET_ACCESS_KEY'},
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }, {
+      name => 'failed--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed--default',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version",
+        "x",
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default',
+        'echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"',
+      ],
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      environment => {
+        AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
+        AWS_SECRET_ACCESS_KEY => {from_secret => 'AWS_SECRET_ACCESS_KEY'},
+      },
+      depends_on => [qw(build test--default)],
+    }, {
+      name => 'failed-notification',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed-notification',
+        'mkdir -p $CIRCLE_ARTIFACTS',
+        "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
+                 "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "aws --version",
+        q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\>\\
+\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/\\>\\
+\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/\\>\\
+\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed-notification',
+        'echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed-notification/>"',
+      ],
+      when => {
+        status => ['failure'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default)],
+    }, {
+      name => 'cleanup--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default failed--default
+                        failed-notification)],
+    }],
+  }}}, 'droneci notification'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
