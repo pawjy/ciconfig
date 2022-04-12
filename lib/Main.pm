@@ -96,6 +96,11 @@ sub droneci_step ($) {
     }
     my $cmd = $input->{command};
     die "No |command|" unless defined $cmd;
+    if (defined $input->{run_timeout}) {
+      $cmd = sprintf 'timeout %d %s',
+          $input->{run_timeout},
+          $cmd;
+    }
     if (defined $input->{wd}) {
       $cmd = 'cd ' . (quotemeta $input->{wd}) . ' && ' . $cmd;
     }
@@ -122,8 +127,8 @@ sub droneci_step ($) {
       }
       push @cmd, q(`cat /drone/src/local/ciconfig/dockername`), $cmd;
       $cmd = join ' ', @cmd;
-      $cmd .= ' &' if $input->{background};
     }
+    $cmd .= ' &' if $input->{background};
     return $cmd;
   } else {
     return $input;
