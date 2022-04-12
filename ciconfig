@@ -2601,12 +2601,6 @@ sub droneci_step ($) {
     }
     my $cmd = $input->{command};
     die "No |command|" unless defined $cmd;
-    if (defined $input->{run_timeout}) {
-      $cmd = 'bash -c ' . quotemeta $cmd;
-      $cmd = sprintf 'timeout %d %s',
-          $input->{run_timeout},
-          $cmd;
-    }
     if (defined $input->{wd}) {
       $cmd = 'cd ' . (quotemeta $input->{wd}) . ' && ' . $cmd;
     }
@@ -2621,8 +2615,14 @@ sub droneci_step ($) {
         $cmd = 'cd `cat /drone/src/local/ciconfig/dockershareddir` && ' . $cmd;
         $cmd = 'bash -c ' . quotemeta $cmd;
       }
-    } elsif ($input->{nested} or defined $input->{wd}) {
+    } elsif ($input->{nested} or defined $input->{wd} or
+             $input->{run_timeout}) {
       $cmd = 'bash -c ' . quotemeta $cmd;
+    }
+    if ($input->{run_timeout}) {
+      $cmd = sprintf 'timeout %d %s',
+          $input->{run_timeout},
+          $cmd;
     }
     if ($input->{nested}) {
       my @cmd = ('docker exec -t');
