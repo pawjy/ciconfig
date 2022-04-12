@@ -838,7 +838,7 @@ my $Platforms = {
             (quotemeta '>'),
             map {
               (
-                (quotemeta "\x0A<"),
+                ('\n' . quotemeta "<"),
                 $_,
                 (quotemeta ">"),
               );
