@@ -680,6 +680,7 @@ my $Platforms = {
 
       my $bcommands = [];
       my $with_artifacts = delete $json->{_artifacts};
+      my $aurls = [];
       my $cleanup_rules = [];
       my $secrets = {};
       if (my $dd = delete $json->{_docker}) {
@@ -751,14 +752,17 @@ my $Platforms = {
         push @$terminate_commands, sub {
           my $name = shift;
           return () if $name =~ /^cleanup-/;
+          my $aurl = sprintf '%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s/',
+              $with_artifacts->{web_prefix}, $name;
+          push @$aurls, $aurl;
           return (
             (sprintf 'aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s', $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name),
-            (sprintf 'echo "Artifacts: <%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s/>"', $with_artifacts->{web_prefix}, $name),
+            (sprintf 'echo "Artifacts: <%s>"', $aurl),
           );
         };
         $secrets->{AWS_ACCESS_KEY_ID} = 1;
         $secrets->{AWS_SECRET_ACCESS_KEY} = 1;
-      }
+      } # $with_artifacts
 
       push @{$bstep->{commands}},
           map { map { droneci_step $_ } $_->('build') } @$init_commands;
@@ -810,6 +814,39 @@ my $Platforms = {
         $rules = $insert_step->($rules, phase => 'failed',
                                 prev_phases => [qw(build test deploy)],
                                 secrets => $secrets);
+        die if @$rules;
+      }
+
+      if (defined $json->{_notification}) {
+        my $not = delete $json->{_notification};
+        die unless $not->{type} eq 'ikachan';
+        my $prefix = $not->{url_prefix};
+        my $channel = $not->{channel};
+        my $message = join '',
+            (quotemeta 'Test failed: '),
+            '$DRONE_COMMIT_BRANCH',
+            (quotemeta ' <'),
+            '$DRONE_BUILD_LINK',
+            (quotemeta '>'),
+            map {
+              (
+                (quotemeta "\x0A<"),
+                $_,
+                (quotemeta ">"),
+              );
+            } @$aurls;
+        my $rules = [];
+        push @$rules, {
+          name => 'failed-notification',
+          commands => [
+            (sprintf 'curl -f -d message=%s -d channel=%s %snotice',
+                 $message,
+                 (quotemeta $channel),
+                 (quotemeta $prefix)),
+          ],
+        };
+        $rules = $insert_step->($rules, phase => 'failed',
+                                prev_phases => [qw(build test deploy)]);
         die if @$rules;
       }
 
@@ -921,6 +958,17 @@ $Options->{'github', 'env_matrix'} = {
 $Options->{'github', 'matrix_allow_failure'} = {
   set => sub {
     push @{$_[0]->{_matrix_allow_failure} ||= []}, @{$_[1] or []};
+  },
+};
+
+$Options->{'droneci', 'notification'} = {
+  set => sub {
+    return unless $_[1];
+    if ($_[1]->{type} eq 'ikachan') {
+      $_[0]->{_notification} = $_[1];
+    } else {
+      die "Unknown |notificaion| |type|: |$_[1]->{type}|";
+    }
   },
 };
 
