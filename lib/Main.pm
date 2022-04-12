@@ -97,6 +97,7 @@ sub droneci_step ($) {
     my $cmd = $input->{command};
     die "No |command|" unless defined $cmd;
     if (defined $input->{run_timeout}) {
+      $cmd = 'bash -c ' . quotemeta $cmd;
       $cmd = sprintf 'timeout %d %s',
           $input->{run_timeout},
           $cmd;
