@@ -2817,6 +2817,122 @@ for (
       host => {path => '/var/lib/docker/shareddir'},
     }],
   }}}, 'droneci docker nested commands'],
+  [{droneci => {
+    docker => {nested => 1},
+    tests => [
+      {"command" => 'a\\b', run_timeout => 3},
+      {"command" => 'a\\b', run_timeout => 3,
+       background => 1},
+      {"command" => 'a\\b',
+       wd => 'c\\d', run_timeout => 3},
+      {"command" => 'a\\b',
+       shared_dir => 1, run_timeout => 3},
+      {"command" => 'a\\b',
+       shared_dir => 1,
+       wd => 'c\\d', run_timeout => 3},
+      {"command" => 'a\\b',
+       nested => 1, run_timeout => 3},
+      {"command" => 'a\\b',
+       nested => 1,
+       wd => 'c\\d', run_timeout => 3},
+      {"command" => 'a\\b',
+       nested => 1,
+       shared_dir => 1, run_timeout => 3},
+      {"command" => 'a\\b',
+       nested => 1,
+       shared_dir => 1,
+       wd => 'c\\d', run_timeout => 3},
+      {"command" => 'a\\b',
+       nested => {envs => ['AB', 'X\\Y']},
+       shared_dir => 1,
+       wd => 'c\\d', run_timeout => 3},
+      {"command" => 'a\\b',
+       nested => {envs => ['AB', 'X\\Y']},
+       shared_dir => 1,
+       wd => 'c\\d',
+       background => 1, run_timeout => 3},
+    ],
+  }} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        "mkdir -p /drone/src/local/ciconfig",
+        q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash}
+      ]
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'timeout 3 a\\b',
+        'timeout 3 a\\b &',
+        'bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'bash -c cd\\ \\`cat\\ \\/drone\\/src\\/local\\/ciconfig\\/dockershareddir\\`\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'bash -c cd\\ \\`cat\\ \\/drone\\/src\\/local\\/ciconfig\\/dockershareddir\\`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c timeout\\ 3\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ timeout\\ 3\\ a\\\\b',
+        'docker exec -t -e AB=$AB -e X\\Y=$X\\Y `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ timeout\\ 3\\ a\\\\b &',
+      ],
+      depends_on => [qw(build)],
+    }, {
+      name => 'cleanup-nested',
+      image => 'quay.io/wakaba/droneci-step-base',
+      volumes => [{
+        name => 'dockersock',
+        path => '/var/run/docker.sock',
+      }, {
+        name => 'dockershareddir',
+        path => '/var/lib/docker/shareddir',
+      }],
+      commands => [
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
+        'docker stop `cat /drone/src/local/ciconfig/dockername`',
+        'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
+      ],
+      when => {
+        status => ['failure', 'success'],
+      },
+      failure => 'ignore',
+      depends_on => [qw(build test--default)],
+    }],
+    volumes => [{
+      name => 'dockersock',
+      host => {path => '/var/run/docker.sock'},
+    }, {
+      name => 'dockershareddir',
+      host => {path => '/var/lib/docker/shareddir'},
+    }],
+  }}}, 'droneci docker nested commands timeout'],
   [{droneci => {tests => [
     "aaa"
   ], cleanup => [
