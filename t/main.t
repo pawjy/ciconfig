@@ -4424,7 +4424,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\>\\n\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/\\>\\n\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/\\>\\n\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
+        q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed-notification && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed-notification/>"',
       ],
       when => {
