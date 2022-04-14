@@ -752,7 +752,7 @@ my $Platforms = {
             {awscli => 1},
           );
           if ($with_artifacts->{sync_interval}) {
-            my $x = (sprintf 'aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s && echo "Artifacts: <%s>"', $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name, $aurl);
+            my $x = (sprintf q{aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s > /dev/null && echo '\n'"Artifacts: <%s>"}, $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name, $aurl);
             push @c, sprintf 'while [ true ]; do %s; sleep %d; done &',
                 $x, $with_artifacts->{sync_interval};
           }

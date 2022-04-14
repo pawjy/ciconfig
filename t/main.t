@@ -3694,7 +3694,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"; sleep 30; done &',
+        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"; sleep 30; done &},
         "x",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
       ],
@@ -3711,7 +3711,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"; sleep 30; done &',
+        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"; sleep 30; done &},
         "aaa",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
       ],
@@ -3731,7 +3731,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"; sleep 30; done &',
+        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"; sleep 30; done &},
         "foo bar",
         "baz",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"',
