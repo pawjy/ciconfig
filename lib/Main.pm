@@ -830,6 +830,7 @@ my $Platforms = {
         die unless $not->{type} eq 'ikachan';
         my $prefix = $not->{url_prefix};
         my $channel = $not->{channel};
+        my $found = {};
         my $message = join '',
             (quotemeta 'Test failed: '),
             '$DRONE_COMMIT_BRANCH',
@@ -842,7 +843,7 @@ my $Platforms = {
                 $_,
                 (quotemeta ">"),
               );
-            } @$aurls;
+            } grep { not $found->{$_}++ } @$aurls;
         my $rules = [];
         push @$rules, {
           name => 'failed-notification',
