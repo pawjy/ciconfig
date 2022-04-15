@@ -3249,7 +3249,7 @@ my $Platforms = {
         push @$init_commands, sub {
           my $name = shift;
           return () if $name =~ /^cleanup-/;
-          my $aurl = sprintf '%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s/',
+          my $aurl = sprintf '%s$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/%s/',
               $with_artifacts->{web_prefix}, $name;
           my @c = (
             'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/' . $name,
@@ -3257,7 +3257,7 @@ my $Platforms = {
             {awscli => 1},
           );
           if ($with_artifacts->{sync_interval}) {
-            my $x = (sprintf q{aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s > /dev/null && echo '\n'"Artifacts: <%s>"}, $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name, $aurl);
+            my $x = (sprintf q{aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/%s > /dev/null && echo '\n'"Artifacts: <%s>"}, $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name, $aurl);
             push @c, sprintf 'while [ true ]; do %s; sleep %d; done &',
                 $x, $with_artifacts->{sync_interval};
           }
@@ -3266,11 +3266,11 @@ my $Platforms = {
         push @$terminate_commands, sub {
           my $name = shift;
           return () if $name =~ /^cleanup-/;
-          my $aurl = sprintf '%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s/',
+          my $aurl = sprintf '%s$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/%s/',
               $with_artifacts->{web_prefix}, $name;
           push @$aurls, $aurl;
           return (
-            (sprintf 'aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER/%s && echo "Artifacts: <%s>"', $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name, $aurl),
+            (sprintf 'aws s3 sync $CIRCLE_ARTIFACTS s3://%s/%s$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/%s && echo "Artifacts: <%s>"', $with_artifacts->{s3_bucket}, $with_artifacts->{s3_prefix}, $name, $aurl),
           );
         };
         $secrets->{AWS_ACCESS_KEY_ID} = 1;
