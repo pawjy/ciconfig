@@ -3288,7 +3288,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3304,7 +3304,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3323,7 +3323,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3377,7 +3377,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3394,7 +3394,7 @@ for (
                  "aws --version",
         "aaa",
         "y",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3413,7 +3413,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "y",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3468,7 +3468,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3485,7 +3485,7 @@ for (
                  "aws --version",
         "aaa",
         "y",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3505,7 +3505,7 @@ for (
                  "aws --version",
         "x",
         "y",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--a/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3558,7 +3558,7 @@ for (
                  "aws --version",
         
         "x",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3574,7 +3574,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3621,7 +3621,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3637,7 +3637,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3657,7 +3657,7 @@ for (
                  "aws --version",
         "foo bar",
         "baz",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/>"',
       ],
       when => {
         status => ['failure'],
@@ -3694,9 +3694,9 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"; sleep 30; done &},
+        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"; sleep 30; done &},
         "x",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3711,9 +3711,9 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"; sleep 30; done &},
+        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"; sleep 30; done &},
         "aaa",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3731,10 +3731,10 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"; sleep 30; done &},
+        q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/>"; sleep 30; done &},
         "foo bar",
         "baz",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/>"',
       ],
       when => {
         status => ['failure'],
@@ -3782,7 +3782,7 @@ for (
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
         q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash},
         "x",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -3812,7 +3812,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         'a',
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
       ],
       depends_on => [qw(build)],
     }, {
@@ -4369,7 +4369,7 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -4385,7 +4385,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
       ],
       environment => {
         AWS_ACCESS_KEY_ID => {from_secret => 'AWS_ACCESS_KEY_ID'},
@@ -4404,7 +4404,7 @@ for (
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/>"',
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/>"',
       ],
       when => {
         status => ['failure'],
@@ -4424,8 +4424,8 @@ for (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
-        q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/build/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/test--default/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed--default/\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
-        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed-notification && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER/failed-notification/>"',
+        q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
+        'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed-notification && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed-notification/>"',
       ],
       when => {
         status => ['failure'],
