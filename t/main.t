@@ -2517,6 +2517,167 @@ for (
     }],
   }}}, 'droneci build tests 3'],
   [{droneci => {build => [
+    "aaa"
+  ], tests => {"a" => {"commands" => [
+    "foo bar",
+    "baz"
+  ], "branch" => "ab"}, "b" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    optional => 1,
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "aaa",
+      ],
+      when => {branch => ['ab', 'xb', 'yb']},
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "foo bar",
+        "baz",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['ab']},
+    }, {
+      name => 'test--b',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "x",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['xb', 'yb']},
+    }],
+  }}}, 'droneci optional test'],
+  [{droneci => {build => [
+    "aaa"
+  ], tests => {"a" => {"commands" => [
+    "foo bar",
+    "baz"
+  ], "branch" => "ab"}, "b" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    optional => 1,
+  }}, deploy => ["c"]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "aaa",
+      ],
+      when => {branch => ['ab', 'master', 'xb', 'yb']},
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "foo bar",
+        "baz",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['ab']},
+    }, {
+      name => 'deploy--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "c",
+      ],
+      depends_on => [qw(build test--a)],
+      when => {branch => ['master'], event => ['push']},
+    }, {
+      name => 'test--b',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "x",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['xb', 'yb']},
+    }],
+  }}}, 'droneci optional test and deploy'],
+  [{droneci => {build => [
+    "aaa"
+  ], tests => {"a" => {"commands" => [
+    "foo bar",
+    "baz"
+  ], "branch" => "ab"}, "b" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    optional => 1,
+  }}, failed => ["c"]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "aaa",
+      ],
+      when => {branch => ['ab', 'xb', 'yb']},
+    }, {
+      name => 'test--a',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "foo bar",
+        "baz",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['ab']},
+    }, {
+      name => 'test--b',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "x",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+      when => {branch => ['xb', 'yb']},
+    }, {
+      name => 'failed--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "c",
+      ],
+      depends_on => [qw(build test--a test--b)],
+      when => {branch => ['ab', 'xb', 'yb'], status => ['failure']},
+      failure => 'ignore',
+    }],
+  }}}, 'droneci optional test and failed'],
+  [{droneci => {build => [
   ], tests => {"a" => {"commands" => [
     "foo bar",
   ], "group" => "ab"}, "b" => {

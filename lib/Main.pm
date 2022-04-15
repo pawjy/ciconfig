@@ -568,6 +568,9 @@ my $Platforms = {
           } elsif ($args{testless} and not $rule->{testless}) {
             push @$other_rules, $rule;
             next;
+          } elsif ($args{required} and $rule->{optional}) {
+            push @$other_rules, $rule;
+            next;
           }
           my $step = {};
           push @{$json->{steps} ||= []}, $step;
@@ -789,12 +792,12 @@ my $Platforms = {
         $bstep->{environment}->{$_} = {from_secret => $_};
       }
 
+      my $trules = delete $json->{_test_rules} || [];
       {
-        my $rules = delete $json->{_test_rules} || [];
-        $rules = $insert_step->($rules, phase => 'test',
-                                prev_phases => [qw(build)],
-                                secrets => $secrets);
-        die if @$rules;
+        $trules = $insert_step->($trules, phase => 'test',
+                                 prev_phases => [qw(build)],
+                                 secrets => $secrets,
+                                 required => 1);
       }
 
       {
@@ -811,6 +814,13 @@ my $Platforms = {
                                  prev_phases => [qw(build test)],
                                  secrets => $secrets);
         die if @$drules;
+      }
+
+      {
+        $trules = $insert_step->($trules, phase => 'test',
+                                 prev_phases => [qw(build)],
+                                 secrets => $secrets);
+        die if @$trules;
       }
 
       if (not $no_build_branch) {
