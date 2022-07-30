@@ -3547,14 +3547,22 @@ $Options->{'github', 'merger'} = {
     my $json = $_[0];
     return unless $_[1];
     my $into = 'master';
+    my $needs = [];
     if (ref $_[1] eq 'HASH') {
       $into = $_[1]->{into} if defined $_[1]->{into};
+      $needs = $_[1]->{needupdate} || [];
     }
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
           {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-           secrets => ['GITHUB_TOKEN']},
+           secrets => ['GITHUB_TOKEN']};
+      for my $repo (@$needs) {
+        push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
+            {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/'.$repo.'/dispatches"',
+             secrets => ['GH_ACCESS_TOKEN']};
+      }
+      push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
           {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY/\\//%2F} -X POST',
            secrets => ['BWALL_TOKEN', 'BWALL_HOST']};
     } # $branch
