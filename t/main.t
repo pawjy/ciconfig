@@ -1870,6 +1870,37 @@ for (
       ],
     }},
   }}}, 'merger'],
+  [{github => {merger => {needupdate => ['foo/bar']}}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {deploy_github_nightly => {
+      if => q{${{ github.ref == 'refs/heads/nightly' }}},
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+         env => {GITHUB_TOKEN => q<${{ secrets.GITHUB_TOKEN }}>}},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/foo/bar/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
+         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
+                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+      ],
+    }, deploy_github_staging => {
+      if => q{${{ github.ref == 'refs/heads/staging' }}},
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GITHUB_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
+         env => {GITHUB_TOKEN => q<${{ secrets.GITHUB_TOKEN }}>}},
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/foo/bar/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
+         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
+                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+      ],
+    }},
+  }}}, 'merger + needupdate'],
   [{github => {pmbp => 'latest',
                merger => 1}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
