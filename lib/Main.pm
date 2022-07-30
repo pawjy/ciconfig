@@ -526,10 +526,30 @@ my $Platforms = {
              with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
       }
 
+      for my $hook_name (sort { $a cmp $b }
+                         keys %{$input->{_github_hook_jobs} or {}}) {
+        ## has similar
+        my $json = $output->{'.github/workflows/hook.yml'} ||= {};
+        $json->{name} = 'hook';
+        push @{$json->{on}->{repository_dispatch}->[0]->{types}||=[]},
+            $hook_name;
+
+        my $job = $json->{jobs}->{'hook_'.$hook_name} = {
+          if => q[${{ github.ref == 'refs/heads/master' }}],
+          'runs-on' => 'ubuntu-latest',
+          steps => [map { github_step $_ } @{$input->{_github_hook_jobs}->{$hook_name} or []}],
+        };
+
+        unshift @{$job->{steps}},
+            {"uses" => 'actions/checkout@v2',
+             with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
+      }
+
       return $output;
     },
     possible_files => [
       '.github/workflows/test.yml',
+      '.github/workflows/hook.yml',
       '.github/workflows/cron.yml',
     ],
   },
@@ -1477,6 +1497,30 @@ $Options->{'github', 'gaa'} = {
         "git diff-index --quiet HEAD --cached || git commit -m auto",
         "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
         ;
+  },
+};
+
+$Options->{'github', 'updatebyhook'} = {
+  set => sub {
+    my $json = $_[0];
+    push @{$json->{_github_hook_jobs}->{needupdate} ||= []},
+        'git config --global user.email "temp@github.test"',
+        'git config --global user.name "GitHub Actions"',
+        "make updatebyhook",
+        "git diff-index --quiet HEAD --cached || git commit -m updatebyhook",
+        "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
+        ;
+  },
+};
+
+$Options->{'github', 'needupdate'} = {
+  set => sub {
+    my $json = $_[0];
+    for my $repo (@{$_[1]}) {
+      push @{$json->{_branch_github_deploy_jobs}->{master} ||= []},
+          {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/'.$repo.'/dispatches"',
+           secrets => ['GH_ACCESS_TOKEN']};
+    } # $repo
   },
 };
 
