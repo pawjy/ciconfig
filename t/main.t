@@ -1984,7 +1984,7 @@ for (
   }}}, 'gaa'],
   [{github => {updatebyhook => 1}} => {'.github/workflows/hook.yml' => {json => {
     name => 'hook',
-    on => {repository_dispatch => [{types => ['needupdate']}]},
+    on => {repository_dispatch => {types => ['needupdate']}},
     jobs => {hook_needupdate => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',

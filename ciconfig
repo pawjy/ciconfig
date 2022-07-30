@@ -3036,7 +3036,7 @@ my $Platforms = {
         ## has similar
         my $json = $output->{'.github/workflows/hook.yml'} ||= {};
         $json->{name} = 'hook';
-        push @{$json->{on}->{repository_dispatch}->[0]->{types}||=[]},
+        push @{$json->{on}->{repository_dispatch}->{types}||=[]},
             $hook_name;
 
         my $job = $json->{jobs}->{'hook_'.$hook_name} = {
