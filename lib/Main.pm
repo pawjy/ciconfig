@@ -1300,6 +1300,8 @@ $Options->{'circleci', 'make_deploy_branches'} = {
 
 $Options->{'droneci', 'deploy'} = {
   set => sub {
+    my $json = $_[0];
+    my $branch = $json->{_config}->{default_branch} || 'master';
     my $steps = $_[1];
     if (not ref $steps eq 'HASH') {
       $steps = {default => $steps};
@@ -1313,7 +1315,7 @@ $Options->{'droneci', 'deploy'} = {
       if (defined $rule->{branch}) {
         push @{$rule->{branches} ||= []}, $rule->{branch};
       }
-      $rule->{branches} //= ['master'];
+      $rule->{branches} //= [$branch];
       push @{$_[0]->{_deploy_rules} ||= []}, {%$rule, name => 'deploy--' . $_};
     }
   },
@@ -1321,9 +1323,11 @@ $Options->{'droneci', 'deploy'} = {
 
 $Options->{'circleci', 'deploy'} = {
   set => sub {
+    my $json = $_[0];
     my $def = $_[1];
+    my $branch = $json->{_config}->{default_branch} || 'master';
     if (ref $_[1] eq 'ARRAY') {
-      $def = {branch => 'master', commands => $_[1]};
+      $def = {branch => $branch, commands => $_[1]};
     }
     my $has_bg = !! $_[0]->{_build_generated_files};
     push @{$_[0]->{$has_bg ? '_deploy_jobs' : '_deploy'}->{$def->{branch}} ||= []},
@@ -1440,6 +1444,7 @@ $Options->{'circleci', 'gaa'} = {
     ];
     my $hour = int ($json->{_random_day_time} / 60);
     my $minute = ($json->{_random_day_time}) % 60;
+    my $branch = $json->{_config}->{default_branch} || 'master';
     $json->{workflows}->{gaa4} = {
       "jobs" => ["gaa4"],
       "triggers" => [
@@ -1449,7 +1454,7 @@ $Options->{'circleci', 'gaa'} = {
             "filters" => {
               "branches" => {
                 "only" => [
-                  "master"
+                  $branch
                 ]
               }
             }
@@ -1466,6 +1471,7 @@ $Options->{'circleci', 'autobuild'} = {
     my $time = ($json->{_random_day_time} + 60*60) % (24*60);
     my $hour = int ($time / 60);
     my $minute = $time % 60;
+    my $branch = $json->{_config}->{default_branch} || 'master';
     $json->{workflows}->{autobuild} = {
       "jobs" => ["build"],
       "triggers" => [
@@ -1475,7 +1481,7 @@ $Options->{'circleci', 'autobuild'} = {
             "filters" => {
               "branches" => {
                 "only" => [
-                  "master"
+                  $branch
                 ]
               }
             }
@@ -1489,7 +1495,8 @@ $Options->{'circleci', 'autobuild'} = {
 $Options->{'github', 'gaa'} = {
   set => sub {
     my $json = $_[0];
-    push @{$json->{_branch_github_batch_jobs}->{master} ||= []},
+    my $branch = $json->{_config}->{default_branch} || 'master';
+    push @{$json->{_branch_github_batch_jobs}->{$branch} ||= []},
         'git config --global user.email "temp@github.test"',
         'git config --global user.name "GitHub Actions"',
         "make deps",
@@ -1516,8 +1523,9 @@ $Options->{'github', 'updatebyhook'} = {
 $Options->{'github', 'needupdate'} = {
   set => sub {
     my $json = $_[0];
+    my $branch = $json->{_config}->{default_branch} || 'master';
     for my $repo (@{$_[1]}) {
-      push @{$json->{_branch_github_deploy_jobs}->{master} ||= []},
+      push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
           {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/'.$repo.'/dispatches"',
            secrets => ['GH_ACCESS_TOKEN']};
     } # $repo
@@ -1529,12 +1537,14 @@ sub generate ($$$;%) {
 
   my $data = {};
   my $random_day_time = ((($args{input_length} || 0) + 12*60 + 21)) % (24*60);
+  my $config = delete $input->{config} || {};
 
   for my $platform (sort { $a cmp $b } keys %$input) {
     my $p_def = $Platforms->{$platform};
     die "Unknown platform |$platform|" unless defined $p_def;
     my $json = {};
     local $json->{_random_day_time} = $random_day_time;
+    local $json->{_config} = $config;
 
     for my $opt (sort { $a cmp $b } keys %{$input->{$platform}}) {
       my $o_def = $Options->{$platform, $opt};
