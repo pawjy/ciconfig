@@ -13,7 +13,7 @@ use warnings;
 package Path::Tiny;
 # ABSTRACT: File path utility
 
-our $VERSION = '0.108';
+our $VERSION = '0.122';
 
 # Dependencies
 use Config;
@@ -87,7 +87,7 @@ sub _win32_vol {
     # so just use the original drive Z: -> Z:
     $dcwd = "$drv" unless defined $dcwd && length $dcwd;
     # normalize dwcd to end with a slash: might be C:\some\cwd or D:\ or Z:
-    $dcwd =~ s{$SLASH?$}{/};
+    $dcwd =~ s{$SLASH?\z}{/};
     # make the path absolute with dcwd
     $path =~ s{^$DRV_VOL}{$dcwd};
     return $path;
@@ -96,7 +96,7 @@ sub _win32_vol {
 # This is a string test for before we have the object; see is_rootdir for well-formed
 # object test
 sub _is_root {
-    return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' );
+    return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT\z/ ) : ( $_[0] eq '/' );
 }
 
 BEGIN {
@@ -243,8 +243,8 @@ sub path {
 
     # expand relative volume paths on windows; put trailing slash on UNC root
     if ( IS_WIN32() ) {
-        $path = _win32_vol( $path, $1 ) if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)};
-        $path .= "/" if $path =~ m{^$UNC_VOL$};
+        $path = _win32_vol( $path, $1 ) if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|\z)};
+        $path .= "/" if $path =~ m{^$UNC_VOL\z};
     }
 
     # concatenations stringifies objects, too
@@ -256,14 +256,14 @@ sub path {
     my $cpath = $path = File::Spec->canonpath($path);
     $path =~ tr[\\][/] if IS_WIN32();
     $path = "/" if $path eq '/..'; # for old File::Spec
-    $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$};
+    $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL\z};
 
     # root paths must always have a trailing slash, but other paths must not
     if ( _is_root($path) ) {
-        $path =~ s{/?$}{/};
+        $path =~ s{/?\z}{/};
     }
     else {
-        $path =~ s{/$}{};
+        $path =~ s{/\z}{};
     }
 
     # do any tilde expansions
@@ -331,6 +331,8 @@ sub rootdir { path( File::Spec->rootdir ) }
 #pod
 #pod     $temp = Path::Tiny->tempfile( @options );
 #pod     $temp = Path::Tiny->tempdir( @options );
+#pod     $temp = $dirpath->tempfile( @options );
+#pod     $temp = $dirpath->tempdir( @options );
 #pod     $temp = tempfile( @options ); # optional export
 #pod     $temp = tempdir( @options );  # optional export
 #pod
@@ -360,6 +362,17 @@ sub rootdir { path( File::Spec->rootdir ) }
 #pod Both C<tempfile> and C<tempdir> may be exported on request and used as
 #pod functions instead of as methods.
 #pod
+#pod The methods can be called on an instances representing a
+#pod directory. In this case, the directory is used as the base to create the
+#pod temporary file/directory, setting the C<DIR> option in File::Temp.
+#pod
+#pod     my $target_dir = path('/to/destination');
+#pod     my $tempfile = $target_dir->tempfile('foobarXXXXXX');
+#pod     $tempfile->spew('A lot of data...');  # not atomic
+#pod     $tempfile->rename($target_dir->child('foobar')); # hopefully atomic
+#pod
+#pod In this case, any value set for option C<DIR> is ignored.
+#pod
 #pod B<Note>: for tempfiles, the filehandles from File::Temp are closed and not
 #pod reused.  This is not as secure as using File::Temp handles directly, but is
 #pod less prone to deadlocks or access problems on some platforms.  Think of what
@@ -380,16 +393,14 @@ sub rootdir { path( File::Spec->rootdir ) }
 #pod Keeping a reference to, or modifying the cached object may break the
 #pod behavior documented above and is not supported.  Use at your own risk.
 #pod
-#pod Current API available since 0.097.
+#pod Current API available since 0.119.
 #pod
 #pod =cut
 
 sub tempfile {
-    shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
-    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
-    $opts = _get_args( $opts, qw/realpath/ );
+    my ( $opts, $maybe_template, $args )
+        = _parse_file_temp_args(tempfile => @_);
 
-    my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
 
@@ -402,13 +413,9 @@ sub tempfile {
 }
 
 sub tempdir {
-    shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
-    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
-    $opts = _get_args( $opts, qw/realpath/ );
+    my ( $opts, $maybe_template, $args )
+        = _parse_file_temp_args(tempdir => @_);
 
-    my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
-
-    # File::Temp->newdir demands leading template
     require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
     my $self = $opts->{realpath} ? path($temp)->realpath : path($temp)->absolute;
@@ -422,6 +429,18 @@ sub tempdir {
 
 # normalize the various ways File::Temp does templates
 sub _parse_file_temp_args {
+    my $called_as = shift;
+    if ( @_ && $_[0] eq 'Path::Tiny' ) { shift } # class method
+    elsif ( @_ && eval{$_[0]->isa('Path::Tiny')} ) {
+        my $dir = shift;
+        if (! $dir->is_dir) {
+            $dir->_throw( $called_as, $dir, "is not a directory object" );
+        }
+        push @_, DIR => $dir->stringify; # no overriding
+    }
+    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
+    $opts = _get_args( $opts, qw/realpath/ );
+
     my $leading_template = ( scalar(@_) % 2 == 1 ? shift(@_) : '' );
     my %args = @_;
     %args = map { uc($_), $args{$_} } keys %args;
@@ -430,7 +449,8 @@ sub _parse_file_temp_args {
         : $leading_template      ? $leading_template
         :                          ()
     );
-    return ( \@template, \%args );
+
+    return ( $opts, \@template, \%args );
 }
 
 #--------------------------------------------------------------------------#
@@ -636,7 +656,7 @@ sub basename {
     $self->_splitpath unless defined $self->[FILE];
     my $file = $self->[FILE];
     for my $s (@suffixes) {
-        my $re = ref($s) eq 'Regexp' ? qr/$s$/ : qr/\Q$s\E$/;
+        my $re = ref($s) eq 'Regexp' ? qr/$s\z/ : qr/\Q$s\E\z/;
         last if $file =~ s/$re//;
     }
     return $file;
@@ -703,7 +723,7 @@ sub child {
 #pod =method children
 #pod
 #pod     @paths = path("/tmp")->children;
-#pod     @paths = path("/tmp")->children( qr/\.txt$/ );
+#pod     @paths = path("/tmp")->children( qr/\.txt\z/ );
 #pod
 #pod Returns a list of C<Path::Tiny> objects for all files and directories
 #pod within a directory.  Excludes "." and ".." automatically.
@@ -1274,7 +1294,7 @@ sub lines {
     if ( $args->{count} ) {
         my ( $counter, $mod, @result ) = ( 0, abs( $args->{count} ) );
         while ( my $line = <$fh> ) {
-            $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})$// if $chomp;
+            $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})\z// if $chomp;
             $result[ $counter++ ] = $line;
             # for positive count, terminate after right number of lines
             last if $counter == $args->{count};
@@ -1287,7 +1307,7 @@ sub lines {
         return @result;
     }
     elsif ($chomp) {
-        return map { s/(?:\x{0d}?\x{0a}|\x{0d})$//; $_ } <$fh>; ## no critic
+        return map { s/(?:\x{0d}?\x{0a}|\x{0d})\z//; $_ } <$fh>; ## no critic
     }
     else {
         return wantarray ? <$fh> : ( my $count =()= <$fh> );
@@ -1316,7 +1336,7 @@ sub lines_utf8 {
         && !$args->{count} )
     {
         my $slurp = slurp_utf8($self);
-        $slurp =~ s/$CRLF$//; # like chomp, but full CR?LF|CR
+        $slurp =~ s/$CRLF\z//; # like chomp, but full CR?LF|CR
         return split $CRLF, $slurp, -1; ## no critic
     }
     elsif ( defined($HAS_PU) ? $HAS_PU : ( $HAS_PU = _check_PU() ) ) {
@@ -1479,11 +1499,11 @@ sub parent {
     elsif ( length $self->[DIR] ) {
         # because of symlinks, any internal updir requires us to
         # just add more updirs at the end
-        if ( $self->[DIR] =~ m{(?:^\.\./|/\.\./|/\.\.$)} ) {
+        if ( $self->[DIR] =~ m{(?:^\.\./|/\.\./|/\.\.\z)} ) {
             $parent = path( $self->[VOL] . $self->[DIR] . "/.." );
         }
         else {
-            ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/$}{/};
+            ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/\z}{/};
             $parent = path( $self->[VOL] . $dir );
         }
     }
@@ -1673,7 +1693,7 @@ sub _resolve_between {
                 $path = path($path)->realpath->[PATH];
             }
             else {
-                $path =~ s{/[^/]+/..$}{/};
+                $path =~ s{/[^/]+/..\z}{/};
             }
         }
         if ( -l $path ) {
@@ -1758,6 +1778,75 @@ sub remove_tree {
 sub sibling {
     my $self = shift;
     return path( $self->parent->[PATH], @_ );
+}
+
+#pod =method size, size_human
+#pod
+#pod     my $p = path("foo"); # with size 1025 bytes
+#pod
+#pod     $p->size;                            # "1025"
+#pod     $p->size_human;                      # "1.1 K"
+#pod     $p->size_human( {format => "iec"} ); # "1.1 KiB"
+#pod
+#pod Returns the size of a file.  The C<size> method is just a wrapper around C<-s>.
+#pod
+#pod The C<size_human> method provides a human-readable string similar to
+#pod C<ls -lh>.  Like C<ls>, it rounds upwards and provides one decimal place for
+#pod single-digit sizes and no decimal places for larger sizes.  The only available
+#pod option is C<format>, which has three valid values:
+#pod
+#pod =for :list
+#pod * 'ls' (the default): base-2 sizes, with C<ls> style single-letter suffixes (K, M, etc.)
+#pod * 'iec': base-2 sizes, with IEC binary suffixes (KiB, MiB, etc.)
+#pod * 'si': base-10 sizes, with SI decimal suffixes (kB, MB, etc.)
+#pod
+#pod If C<-s> would return C<undef>, C<size_human> returns the empty string.
+#pod
+#pod Current API available since 0.122.
+#pod
+#pod =cut
+
+sub size { -s $_[0]->[PATH] }
+
+my %formats = (
+    'ls'  => [ 1024, log(1024), [ "", map { " $_" } qw/K M G T/ ] ],
+    'iec' => [ 1024, log(1024), [ "", map { " $_" } qw/KiB MiB GiB TiB/ ] ],
+    'si'  => [ 1000, log(1000), [ "", map { " $_" } qw/kB MB GB TB/ ] ],
+);
+
+sub _formats { return $formats{$_[0]} }
+
+sub size_human {
+    my $self     = shift;
+    my $args     = _get_args( shift, qw/format/ );
+    my $format   = defined $args->{format} ? $args->{format} : "ls";
+    my $fmt_opts = $formats{$format}
+      or Carp::croak("Invalid format '$format' for size_human()");
+    my $size = -s $self->[PATH];
+    return defined $size ? _human_size( $size, @$fmt_opts ) : "";
+}
+
+sub _ceil {
+    return $_[0] == int($_[0]) ? $_[0] : int($_[0]+1);
+}
+
+sub _human_size {
+    my ( $size, $base, $log_base, $suffixes ) = @_;
+    return "0" if $size == 0;
+
+    my $mag = int( log($size) / $log_base );
+    $size /= $base**$mag;
+    $size =
+        $mag == 0               ? $size
+      : length( int($size) ) == 1 ? _ceil( $size * 10 ) / 10
+      :                             _ceil($size);
+    if ( $size >= $base ) {
+        $size /= $base;
+        $mag++;
+    }
+
+    my $fmt = ( $mag == 0 || length( int($size) ) > 1 ) ? "%.0f%s" : "%.1f%s";
+    return sprintf( $fmt, $size, $suffixes->[$mag] );
 }
 
 #pod =method slurp, slurp_raw, slurp_utf8
@@ -1991,7 +2080,7 @@ sub subsumes {
     }
     else {
         # exact match or prefix breaking at a separator
-        return $other->[PATH] =~ m{^\Q$self->[PATH]\E(?:/|$)};
+        return $other->[PATH] =~ m{^\Q$self->[PATH]\E(?:/|\z)};
     }
 }
 
