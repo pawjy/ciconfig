@@ -1869,7 +1869,7 @@ for (
                  BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
       ],
     }},
-  }}}],
+  }}}, 'merger'],
   [{github => {pmbp => 'latest',
                merger => 1}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
@@ -1916,6 +1916,19 @@ for (
       ],
     }},
   }}}],
+  [{github => {needupdate => ['test1/test2']}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {deploy_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/test1/test2/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}}, 'needupdate'],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
     on => {schedule => [{cron => '2 13 * * *'}]},
@@ -1933,7 +1946,24 @@ for (
         {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
       ],
     }},
-  }}}],
+  }}}, 'gaa'],
+  [{github => {updatebyhook => 1}} => {'.github/workflows/hook.yml' => {json => {
+    name => 'hook',
+    on => {repository_dispatch => [{types => ['needupdate']}]},
+    jobs => {hook_needupdate => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {uses => 'actions/checkout@v2',
+         with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
+        {run => 'git config --global user.email "temp@github.test"'},
+        {run => 'git config --global user.name "GitHub Actions"'},
+        {run => 'make updatebyhook'},
+        {run => 'git diff-index --quiet HEAD --cached || git commit -m updatebyhook'},
+        {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
+      ],
+    }},
+  }}}, 'updatebyhook'],
   [{github => {
     build => ['b'], tests => ['a'],
   }} => {'.github/workflows/test.yml' => {json => {
@@ -4612,6 +4642,7 @@ for (
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
           .github/workflows/test.yml
+          .github/workflows/hook.yml
           .github/workflows/cron.yml)) {
     $expected->{$_} ||= {remove => 1};
   }
