@@ -1929,11 +1929,46 @@ for (
       ],
     }},
   }}}, 'needupdate'],
+  [{config => {
+    default_branch => 'hoge',
+  }, github => {needupdate => ['test1/test2']}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {deploy_github_hoge => {
+      if => q{${{ github.ref == 'refs/heads/hoge' }}},
+      'runs-on' => 'ubuntu-latest',
+      permissions => {contents => 'write'},
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/test1/test2/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}}, 'needupdate default branch'],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
     on => {schedule => [{cron => '2 13 * * *'}]},
     jobs => {batch_github_master => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {uses => 'actions/checkout@v2',
+         with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
+        {run => 'git config --global user.email "temp@github.test"'},
+        {run => 'git config --global user.name "GitHub Actions"'},
+        {run => 'make deps'},
+        {run => 'make updatenightly'},
+        {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
+        {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
+      ],
+    }},
+  }}}, 'gaa'],
+  [{config => {
+    default_branch => 'fuga',
+  }, github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
+    name => 'cron',
+    on => {schedule => [{cron => '56 13 * * *'}]},
+    jobs => {batch_github_fuga => {
+      if => q{${{ github.ref == 'refs/heads/fuga' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
         {uses => 'actions/checkout@v2',
