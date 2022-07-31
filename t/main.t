@@ -2437,7 +2437,7 @@ for (
         'runs-on' => 'ubuntu-latest',
         steps => [
           {name => 'Checkout', uses => 'actions/checkout@v3'},
-          {run => 'git submodule update --init'},
+          {run => 'make build-github-pages'},
           {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
           {name => 'Upload artifact',
            uses => 'actions/upload-pages-artifact@v1',

@@ -579,7 +579,7 @@ my $Platforms = {
         push @{$job->{steps}},
             {name => 'Checkout', uses => 'actions/checkout@v3'};
         push @{$job->{steps}},
-            github_step 'git submodule update --init';
+            github_step 'make build-github-pages';
         push @{$job->{steps}},
             {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
             {name => 'Upload artifact',
