@@ -545,12 +545,57 @@ my $Platforms = {
              with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
       }
 
+      if ($input->{_github_pages}) {
+        my $json = $output->{'.github/workflows/pages.yml'} = {
+          name => 'pages',
+          on => {
+            push => {
+              branches => ['master'],
+            },
+            workflow_dispatch => {},
+          },
+          permissions => {
+            contents => 'read',
+            pages => 'write',
+            'id-token' => 'write',
+          },
+          concurrency => {
+            group => 'pages',
+            'cancel-in-progress' => \1,
+          },
+          jobs => {
+            deploy => {
+              environment => {
+                name => 'github-pages',
+                url => '${{ steps.deployment.outputs.page_url }}',
+              },
+              'runs-on' => 'ubuntu-latest',
+              steps => [
+              ],
+            },
+          },
+        };
+        my $job = $json->{jobs}->{deploy};
+        push @{$job->{steps}},
+            {name => 'Checkout', uses => 'actions/checkout@v3'};
+        push @{$job->{steps}},
+            github_step 'git submodule update --init';
+        push @{$job->{steps}},
+            {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
+            {name => 'Upload artifact',
+             uses => 'actions/upload-pages-artifact@v1',
+             with => {path => '.'}},
+            {name => 'Deploy', id => 'deployment',
+             uses => 'actions/deploy-pages@main'};
+      }
+
       return $output;
     },
     possible_files => [
       '.github/workflows/test.yml',
       '.github/workflows/hook.yml',
       '.github/workflows/cron.yml',
+      '.github/workflows/pages.yml',
     ],
   },
   droneci => {
@@ -1431,6 +1476,7 @@ $Options->{'circleci', 'parallel'} = {
 
 $Options->{'circleci', 'empty'} = {
   set => sub {
+    return unless $_[1];
     $_[0]->{_empty} = 1;
   },
 };
@@ -1438,6 +1484,7 @@ $Options->{'circleci', 'empty'} = {
 $Options->{'circleci', 'gaa'} = {
   set => sub {
     my $json = $_[0];
+    return unless $_[1];
     $json->{jobs}->{gaa4} = new_job;
     $json->{jobs}->{gaa4}->{steps} = [
         "checkout",
@@ -1476,6 +1523,7 @@ $Options->{'circleci', 'gaa'} = {
 $Options->{'circleci', 'autobuild'} = {
   set => sub {
     my $json = $_[0];
+    return unless $_[1];
     my $time = ($json->{_random_day_time} + 60*60) % (24*60);
     my $hour = int ($time / 60);
     my $minute = $time % 60;
@@ -1503,6 +1551,7 @@ $Options->{'circleci', 'autobuild'} = {
 $Options->{'github', 'gaa'} = {
   set => sub {
     my $json = $_[0];
+    return unless $_[1];
     my $branch = $json->{_config}->{default_branch} || 'master';
     push @{$json->{_branch_github_batch_jobs}->{$branch} ||= []},
         'git config --global user.email "temp@github.test"',
@@ -1518,6 +1567,7 @@ $Options->{'github', 'gaa'} = {
 $Options->{'github', 'updatebyhook'} = {
   set => sub {
     my $json = $_[0];
+    return unless $_[1];
     push @{$json->{_github_hook_jobs}->{needupdate} ||= []},
         'git config --global user.email "temp@github.test"',
         'git config --global user.name "GitHub Actions"',
@@ -1532,11 +1582,20 @@ $Options->{'github', 'needupdate'} = {
   set => sub {
     my $json = $_[0];
     my $branch = $json->{_config}->{default_branch} || 'master';
-    for my $repo (@{$_[1]}) {
+    for my $repo (@{$_[1] or []}) {
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
           {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/'.$repo.'/dispatches"',
            secrets => ['GH_ACCESS_TOKEN']};
     } # $repo
+  },
+};
+
+$Options->{'github', 'pages'} = {
+  set => sub {
+    my $json = $_[0];
+    return unless $_[1];
+
+    $json->{_github_pages} = 1;
   },
 };
 
