@@ -2411,6 +2411,43 @@ for (
       ],
     }},
   }}}, 'custom matrix allow failure'],
+  [{github => {pages => 1}} => {'.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      push => {
+        branches => ['master'],
+      },
+      workflow_dispatch => {},
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v3'},
+          {run => 'git submodule update --init'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v1',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@main'},
+        ],
+      },
+    },
+  }}}, 'github pages'],
   
   [{droneci => {}} => {'.drone.yml' => {json => {
     kind => 'pipeline',
@@ -4709,6 +4746,7 @@ for (
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
           .github/workflows/test.yml
           .github/workflows/hook.yml
+          .github/workflows/pages.yml
           .github/workflows/cron.yml)) {
     $expected->{$_} ||= {remove => 1};
   }
