@@ -4741,6 +4741,132 @@ for (
                         failed-notification)],
     }],
   }}}, 'droneci notification'],
+  [{droneci => {tests => [
+    "aaa"
+  ], merger => \1, "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-merger--nightly',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "git rev-parse HEAD > head.txt",
+        q{curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $DRONE_COMMIT_BRANCH into master\"}" "https://api.github.com/repos/$DRONE_REPO/merges"},
+      ],
+      environment => {
+        GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
+      },
+      depends_on => ['build', 'test--default'],
+      when => {branch => ['nightly'], event => ['push']},
+    }, {
+      name => 'deploy-merger--staging',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "git rev-parse HEAD > head.txt",
+        q{curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $DRONE_COMMIT_BRANCH into master\"}" "https://api.github.com/repos/$DRONE_REPO/merges"},
+      ],
+      environment => {
+        GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
+      },
+      depends_on => [qw(build test--default)],
+      when => {branch => ['staging'], event => ['push']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy-merger--nightly
+                        deploy-merger--staging)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci merger'],
+  [{droneci => {tests => [
+    "aaa"
+  ], merger => {into => 'ho-ge'}, "failed" => {"a" => {
+    "commands" => ["x"],
+    "branches" => ["xb", "yb"],
+    "branch" => "c",
+  }}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+      ],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "aaa",
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => ['build'],
+    }, {
+      name => 'deploy-merger--nightly',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "git rev-parse HEAD > head.txt",
+        q{curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"ho-ge\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $DRONE_COMMIT_BRANCH into ho-ge\"}" "https://api.github.com/repos/$DRONE_REPO/merges"},
+      ],
+      environment => {
+        GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
+      },
+      depends_on => ['build', 'test--default'],
+      when => {branch => ['nightly'], event => ['push']},
+    }, {
+      name => 'deploy-merger--staging',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "git rev-parse HEAD > head.txt",
+        q{curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"ho-ge\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $DRONE_COMMIT_BRANCH into ho-ge\"}" "https://api.github.com/repos/$DRONE_REPO/merges"},
+      ],
+      environment => {
+        GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
+      },
+      depends_on => [qw(build test--default)],
+      when => {branch => ['staging'], event => ['push']},
+    }, {
+      name => 'failed--a',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "x",
+      ],
+      failure => 'ignore',
+      depends_on => [qw(build test--default deploy-merger--nightly
+                        deploy-merger--staging)],
+      when => {status => ['failure']},
+    }],
+  }}}, 'droneci merger'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
