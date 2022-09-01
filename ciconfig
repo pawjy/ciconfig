@@ -3630,6 +3630,29 @@ $Options->{'circleci', 'merger'} = {
   },
 };
 
+$Options->{'droneci', 'merger'} = {
+  set => sub {
+    my $json = $_[0];
+    return unless $_[1];
+    my $into = 'master';
+    if (ref $_[1] eq 'HASH') {
+      $into = $_[1]->{into} if defined $_[1]->{into};
+    }
+    for my $branch (qw(staging nightly)) {
+      push @{$json->{_deploy_rules} ||= []}, {
+        name => 'deploy-merger--' . $branch,
+        secrets => ['GH_ACCESS_TOKEN'],
+        commands => [
+          map { droneci_step $_ } 
+              'git rev-parse HEAD > head.txt',
+              'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $DRONE_COMMIT_BRANCH into '.$into.'\"}" "https://api.github.com/repos/$DRONE_REPO/merges"',
+        ],
+        branches => [$branch],
+      };
+    }
+  },
+};
+
 $Options->{'circleci', 'heroku'} = {
   set => sub {
     return unless $_[1];
