@@ -265,6 +265,11 @@ my $Platforms = {
         delete $json->{_test};
 
         $json->{workflows}->{build}->{jobs} = [];
+        my $deploy_contexts = ['deploy-context'];
+        if (defined $json->{_deploy_context}) {
+          push @$deploy_contexts, $json->{_deploy_context};
+        }
+        delete $json->{_deploy_context};
         
         ## Deploy job executed before builds
         for my $branch_name (sort { $a cmp $b } keys %{$json->{_soon_deploy_jobs} or {}}) {
@@ -277,7 +282,7 @@ my $Platforms = {
               } @{$json->{_soon_deploy_jobs}->{$branch_name}};
           push @{$json->{workflows}->{build}->{jobs}}, {$job_name => {
             filters => {branches => {only => [$branch_name]}},
-            context => ['deploy-context'],
+            context => $deploy_contexts,
           }};
         }
 
@@ -297,7 +302,7 @@ my $Platforms = {
           my $edj = {
             requires => \@build_job_name,
             filters => {branches => {only => [$branch_name]}},
-            context => ['deploy-context'],
+            context => $deploy_contexts,
           };
           push @{$json->{workflows}->{build}->{jobs}}, {$job_name => $edj};
         }
@@ -344,7 +349,7 @@ my $Platforms = {
           push @{$json->{workflows}->{build}->{jobs}}, {$job_name => {
             requires => \@job_name,
             filters => {branches => {only => [$branch_name]}},
-            context => ['deploy-context'],
+            context => $deploy_contexts,
           }};
           $deploy_branches->{$branch_name} = 1;
         }
@@ -1201,6 +1206,12 @@ $Options->{'circleci', 'required_docker_images'} = {
     unshift @{$_[0]->{_test_preps} ||= []}, @$preps;
   }, # set
 }; # required_docker_images
+
+$Options->{'circleci', 'context'} = {
+  set => sub {
+    $_[0]->{_deploy_context} = $_[1];
+  },
+};
 
 $Options->{'circleci', 'docker-build'} = {
   set => sub {
