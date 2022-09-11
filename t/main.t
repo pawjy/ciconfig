@@ -110,7 +110,8 @@ for (
         {run => {command => 'docker build -t abc/def .'}},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS || docker login -u $DOCKER_USER -p $DOCKER_PASS' . "\x0Afi"}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push abc/def && curl -sSLf $BWALL_URL -X POST' . "\x0Afi"}},
+        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push abc/def' . "\x0Afi"}},
+        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=abc/def bash' . "\x0Afi"}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
@@ -127,7 +128,8 @@ for (
         {run => {command => 'docker build -t xyz/abc/def .'}},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
         {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS xyz || docker login -u $DOCKER_USER -p $DOCKER_PASS xyz' . "\x0Afi"}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push xyz/abc/def && curl -sSLf $BWALL_URL -X POST' . "\x0Afi"}},
+        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push xyz/abc/def' . "\x0Afi"}},
+        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=xyz/abc/def bash' . "\x0Afi"}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
@@ -172,7 +174,8 @@ for (
         {"attach_workspace" => {"at" => "./"}},
         {run => {command => 'docker load -i .ciconfigtemp/dockerimages/xyz/abc/def.tar'}},
         {deploy => {command => 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS xyz || docker login -u $DOCKER_USER -p $DOCKER_PASS xyz'}},
-        {deploy => {command => 'docker push xyz/abc/def && curl -sSLf $BWALL_URL -X POST'}},
+        {deploy => {command => 'docker push xyz/abc/def'}},
+        {deploy => {command => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=xyz/abc/def bash'}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [
@@ -223,7 +226,8 @@ for (
         {"attach_workspace" => {"at" => "./"}},
         {run => {command => 'docker load -i .ciconfigtemp/dockerimages/xyz/$ABC/def/$CIRCLE_SHA1.tar'}},
         {deploy => {command => 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS xyz || docker login -u $DOCKER_USER -p $DOCKER_PASS xyz'}},
-        {deploy => {command => 'docker push xyz/$ABC/def:$CIRCLE_SHA1 && curl -sSLf $BWALL_URL -X POST'}},
+        {deploy => {command => 'docker push xyz/$ABC/def:$CIRCLE_SHA1'}},
+        {deploy => {command => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=xyz/*/def:* bash'}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [
@@ -329,7 +333,8 @@ for (
         {"attach_workspace" => {"at" => "./"}},
         {run => {command => 'docker load -i .ciconfigtemp/dockerimages/xyz/abc/def.tar'}},
         {deploy => {command => 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS xyz || docker login -u $DOCKER_USER -p $DOCKER_PASS xyz'}},
-        {deploy => {command => 'docker push xyz/abc/def && curl -sSLf $BWALL_URL -X POST'}},
+        {deploy => {command => 'docker push xyz/abc/def'}},
+        {deploy => {command => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=xyz/abc/def bash'}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [
@@ -1113,14 +1118,16 @@ for (
       steps => [
         'checkout',
         {deploy => {command => 'git rev-parse HEAD > head.txt' . "\x0A" .
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"master\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into master\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST'}},
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"master\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into master\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges"' . "\x0A" .
+                        'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }, deploy_nightly => {
       machine => $machine,
       steps => [
         'checkout',
         {deploy => {command => 'git rev-parse HEAD > head.txt' . "\x0A" .
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"master\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into master\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST'}},
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"master\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into master\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges"' . "\x0A" .
+                        'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [
@@ -1148,14 +1155,16 @@ for (
       steps => [
         'checkout',
         {deploy => {command => 'git rev-parse HEAD > head.txt' . "\x0A" .
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"dev\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into dev\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST'}},
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"dev\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into dev\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges"' . "\x0A" .
+                        'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }, deploy_nightly => {
       machine => $machine,
       steps => [
         'checkout',
         {deploy => {command => 'git rev-parse HEAD > head.txt' . "\x0A" .
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"dev\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into dev\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST'}},
+                        'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\\"base\\":\\"dev\\",\\"head\\":\\"`cat head.txt`\\",\\"commit_message\\":\\"auto-merge $CIRCLE_BRANCH into dev\\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges"' . "\x0A" .
+                        'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }},
     workflows => {version => 2, build => {jobs => [
@@ -1853,9 +1862,8 @@ for (
       steps => [
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
-        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
-         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
-                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
@@ -1864,9 +1872,8 @@ for (
       steps => [
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
-        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
-         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
-                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }},
   }}}, 'merger'],
@@ -1882,9 +1889,8 @@ for (
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/foo/bar/dispatches"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
-        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
-         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
-                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
@@ -1895,9 +1901,8 @@ for (
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/foo/bar/dispatches"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
-        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
-         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
-                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }},
   }}}, 'merger + needupdate'],
@@ -1929,9 +1934,8 @@ for (
       steps => [
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
-        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
-         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
-                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
@@ -1941,9 +1945,8 @@ for (
       steps => [
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
-        {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\/heads\//}/${GITHUB_REPOSITORY/\//%2F} -X POST',
-         env => {BWALL_TOKEN => q<${{ secrets.BWALL_TOKEN }}>,
-                 BWALL_HOST => q<${{ secrets.BWALL_HOST }}>}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }},
   }}}],

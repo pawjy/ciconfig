@@ -3700,8 +3700,8 @@ $Options->{'github', 'merger'} = {
              secrets => ['GH_ACCESS_TOKEN']};
       }
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
-          {run => 'curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.${GITHUB_REF/refs\\/heads\\//}/${GITHUB_REPOSITORY/\\//%2F} -X POST',
-           secrets => ['BWALL_TOKEN', 'BWALL_HOST']};
+          {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\\/heads\\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+           secrets => ['BWALLER_URL']};
     } # $branch
   },
 };
@@ -3717,7 +3717,8 @@ $Options->{'circleci', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       push @{$json->{_deploy_jobs}->{$branch} ||= []}, join "\n",
           'git rev-parse HEAD > head.txt',
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $CIRCLE_BRANCH into '.$into.'\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges" && curl -f https://$BWALL_TOKEN:@$BWALL_HOST/ping/merger.$CIRCLE_BRANCH/$CIRCLE_PROJECT_USERNAME%2F$CIRCLE_PROJECT_REPONAME -X POST';
+          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $CIRCLE_BRANCH into '.$into.'\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges"',
+          'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash';
     } # $branch
   },
 };
@@ -3832,9 +3833,11 @@ $Options->{'circleci', 'docker-build'} = {
         }
       }
 
+      my $name2 = $name;
+      $name2 =~ s/\$\w+/\*/g;
       push @{$_[0]->{$has_bg ? '_deploy_jobs' : '_deploy'}->{$def->{branch}} ||= []},
-          'docker push ' . $name . ' && ' .
-          'curl -sSLf $BWALL_URL'.(defined $def->{bwall_suffix} ? '.' . $def->{bwall_suffix} : $def->{branch} eq 'master' ? '' : '.' . $def->{branch}).' -X POST';
+          'docker push ' . $name,
+          'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME='.$name2.(defined $def->{bwall_suffix} ? '.' . $def->{bwall_suffix} : $def->{branch} eq 'master' ? '' : '.' . $def->{branch}).' bash';
     } # $def
   },
 };
