@@ -1207,7 +1207,8 @@ $Options->{'circleci', 'docker-build'} = {
     return unless $_[1];
     my $defs = ref $_[1] eq 'ARRAY' ? $_[1] : [$_[1]];
     push @{$_[0]->{_build} ||= []}, 'docker info';
-    my $has_bg = !! $_[0]->{_build_generated_files};
+    $_[0]->{_build_generated_files} ||= [];
+    my $has_bg = !! $_[0]->{_build_generated_files}; # true
     my $has_login = {};
     for my $def (@$defs) {
       $def = ref $def ? $def : {name => $def};
