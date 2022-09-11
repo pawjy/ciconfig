@@ -382,6 +382,43 @@ for (
                            context => ['deploy-context']}},
     ]}},
   }}}, 'build jobs / docker with tests'],
+  [{circleci => {'docker-build' => 'abc/def',
+                 context => 'foo-bar'}} => {'.circleci/config.yml' => {json => {
+    version => 2,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'docker info'}},
+        {run => {command => 'docker build -t abc/def .'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {run => {command => 'mkdir -p .ciconfigtemp/dockerimages/abc/'}},
+        {run => {command => 'docker save -o .ciconfigtemp/dockerimages/abc/def.tar abc/def'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp'],
+        }},
+      ],
+    }, deploy_master => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'docker load -i .ciconfigtemp/dockerimages/abc/def.tar'}},
+        {deploy => {command => 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS || docker login -u $DOCKER_USER -p $DOCKER_PASS'}},
+        {deploy => {command => 'docker push abc/def'}},
+        {deploy => {command => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=abc/def bash'}},
+      ],
+    }},
+    workflows => {version => 2, build => {jobs => [
+      {'build'=>{}},
+      {'deploy_master' => {filters => {branches => {only => ['master']}},
+                           requires => ['build'],
+                           context => ['deploy-context', 'foo-bar']}},
+    ]}},
+  }}}, 'circleci docker-build with context'],
   [{circleci => {required_docker_images => ['a/b', 'a/b/c']}} => {'.circleci/config.yml' => {json => {
     version => 2,
     jobs => {build => {
