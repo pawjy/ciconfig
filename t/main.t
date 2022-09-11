@@ -97,7 +97,7 @@ for (
       ],
     }},
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
-  }}}],
+  }}}, 'circleci empty'],
   [{circleci => {'docker-build' => 'abc/def'}} => {'.circleci/config.yml' => {json => {
     version => 2,
     jobs => {build => {
@@ -109,13 +109,31 @@ for (
         {run => {command => 'docker info'}},
         {run => {command => 'docker build -t abc/def .'}},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS || docker login -u $DOCKER_USER -p $DOCKER_PASS' . "\x0Afi"}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push abc/def' . "\x0Afi"}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=abc/def bash' . "\x0Afi"}},
+        {run => {command => 'mkdir -p .ciconfigtemp/dockerimages/abc/'}},
+        {run => {command => 'docker save -o .ciconfigtemp/dockerimages/abc/def.tar abc/def'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp'],
+        }},
+      ],
+    }, deploy_master => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'docker load -i .ciconfigtemp/dockerimages/abc/def.tar'}},
+        {deploy => {command => 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS || docker login -u $DOCKER_USER -p $DOCKER_PASS'}},
+        {deploy => {command => 'docker push abc/def'}},
+        {deploy => {command => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=abc/def bash'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
-  }}}],
+    workflows => {version => 2, build => {jobs => [
+      {'build'=>{}},
+      {'deploy_master' => {filters => {branches => {only => ['master']}},
+                           requires => ['build'],
+                           context => ['deploy-context']}},
+    ]}},
+  }}}, 'circleci docker-build basic 2'],
   [{circleci => {'docker-build' => 'xyz/abc/def'}} => {'.circleci/config.yml' => {json => {
     version => 2,
     jobs => {build => {
@@ -127,13 +145,31 @@ for (
         {run => {command => 'docker info'}},
         {run => {command => 'docker build -t xyz/abc/def .'}},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS xyz || docker login -u $DOCKER_USER -p $DOCKER_PASS xyz' . "\x0Afi"}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'docker push xyz/abc/def' . "\x0Afi"}},
-        {deploy => {command => q{if [ "${CIRCLE_BRANCH}" == 'master' ]; then} ."\x0Atrue\x0A" . 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=xyz/abc/def bash' . "\x0Afi"}},
+        {run => {command => 'mkdir -p .ciconfigtemp/dockerimages/xyz/abc/'}},
+        {run => {command => 'docker save -o .ciconfigtemp/dockerimages/xyz/abc/def.tar xyz/abc/def'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp'],
+        }},
+      ],
+    }, deploy_master => {
+      machine => $machine,
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'docker load -i .ciconfigtemp/dockerimages/xyz/abc/def.tar'}},
+        {deploy => {command => 'docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS xyz || docker login -u $DOCKER_USER -p $DOCKER_PASS xyz'}},
+        {deploy => {command => 'docker push xyz/abc/def'}},
+        {deploy => {command => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=xyz/abc/def bash'}},
       ],
     }},
-    workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
-  }}}],
+    workflows => {version => 2, build => {jobs => [
+      {'build'=>{}},
+      {'deploy_master' => {filters => {branches => {only => ['master']}},
+                           requires => ['build'],
+                           context => ['deploy-context']}},
+    ]}},
+  }}}, 'circleci docker-build basic 3'],
   [{circleci => {
     'docker-build' => 'xyz/abc/def',
     build_generated_files => [],
