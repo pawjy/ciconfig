@@ -137,6 +137,9 @@ sub droneci_step ($) {
 } # droneci_step
 
 my $Platforms = {
+  meta => {
+    set => sub { },
+  },
   travisci => {
     file => '.travis.yml',
     set => sub {
@@ -1637,6 +1640,14 @@ $Options->{'github', 'pages'} = {
   },
 };
 
+$Options->{'meta', 'name'} = {set => sub { }};
+$Options->{'meta', 'summary'} = {set => sub { }};
+$Options->{'meta', 'desc'} = {set => sub { }};
+$Options->{'meta', 'deps'} = {set => sub { }};
+$Options->{'meta', 'author'} = {set => sub { }};
+$Options->{'meta', 'license'} = {set => sub { }};
+$Options->{'meta', 'history'} = {set => sub { }};
+
 sub generate ($$$;%) {
   my ($class, $input, $root_path, %args) = @_;
 
@@ -1664,8 +1675,10 @@ sub generate ($$$;%) {
         $data->{$file_name} = {json => $files->{$file_name}};
       }
     } else {
-      $p_def->{set}->($json);
-      $data->{$p_def->{file}} = {json => $json};
+      if (defined $p_def->{file}) {
+        $p_def->{set}->($json);
+        $data->{$p_def->{file}} = {json => $json};
+      }
     }
   } # $platform
 
