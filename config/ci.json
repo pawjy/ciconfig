@@ -1,4 +1,24 @@
 {
+  "meta": {
+    "name": "ciconfig",
+    "summary": "The |ciconfig| script.",
+    "deps": [
+      "perl5.14+"
+    ],
+    "author": {
+      "name": "Wakaba",
+      "email": "wakaba@suikawiki.org"
+    },
+    "license": "perl",
+    "history": [
+      {
+        "type": "transfer",
+        "time": "2022-02-02",
+        "old_url": "https://github.com/wakaba/ciconfig",
+        "new_url": "https://github.com/pawjy/ciconfig"
+      }
+    ]
+  },
   "github": {
     "pmbp": "5.14+",
     "merger": true,

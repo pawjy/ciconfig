@@ -12,6 +12,8 @@ my $machine = {"image" => "ubuntu-2004:202101-01"};
 for (
   [{} => {}],
 
+  [{meta => {}} => {}, 'meta empty'],
+
   [{travisci => {}} => {'.travis.yml' => {json => {
   }}}],
   [{travisci => {pmbp => 'latest'}} => {'.travis.yml' => {json => {
