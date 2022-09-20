@@ -4098,11 +4098,15 @@ $Options->{'github', 'gaa'} = {
   set => sub {
     my $json = $_[0];
     return unless $_[1];
+    my $build = ['make deps'];
+    if (ref $_[1] eq 'HASH') {
+      $build = $_[1]->{build};
+    }
     my $branch = $json->{_config}->{default_branch} || 'master';
     push @{$json->{_branch_github_batch_jobs}->{$branch} ||= []},
         'git config --global user.email "temp@github.test"',
         'git config --global user.name "GitHub Actions"',
-        "make deps",
+        @$build,
         "make updatenightly",
         "git diff-index --quiet HEAD --cached || git commit -m auto",
         "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
@@ -4148,6 +4152,7 @@ $Options->{'github', 'pages'} = {
 $Options->{'meta', 'name'} = {set => sub { }};
 $Options->{'meta', 'summary'} = {set => sub { }};
 $Options->{'meta', 'desc'} = {set => sub { }};
+$Options->{'meta', 'url'} = {set => sub { }};
 $Options->{'meta', 'deps'} = {set => sub { }};
 $Options->{'meta', 'author'} = {set => sub { }};
 $Options->{'meta', 'license'} = {set => sub { }};
