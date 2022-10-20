@@ -13,7 +13,7 @@ use warnings;
 package Path::Tiny;
 # ABSTRACT: File path utility
 
-our $VERSION = '0.128';
+our $VERSION = '0.130';
 
 # Dependencies
 use Config;
@@ -1407,7 +1407,8 @@ sub lines_utf8 {
 #pod thrown.  Returns the the path object to facilitate chaining.
 #pod
 #pod B<NOTE>: unlike Perl's builtin C<mkdir>, this will create intermediate paths
-#pod similar to the Unix C<mkdir -p> command.
+#pod similar to the Unix C<mkdir -p> command.  It will not error if applied to an
+#pod existing directory.
 #pod
 #pod Current API available since 0.125.
 #pod
@@ -1421,7 +1422,7 @@ sub mkdir {
     require File::Path;
     my @dirs;
     my $ok = eval {
-        @dirs = File::Path::make_path( $self->[PATH], $args );
+        File::Path::make_path( $self->[PATH], $args );
         1;
     };
     if (!$ok) {
@@ -1431,10 +1432,6 @@ sub mkdir {
         my ( $file, $message ) = %{ $err->[0] };
         $self->_throw('mkdir', $file, $message);
     }
-    if (!@dirs) {
-        $self->_throw('mkdir', $self->[PATH], "directories not created: reason unknown");
-    }
-
     return $self;
 }
 
