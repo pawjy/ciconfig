@@ -1612,7 +1612,12 @@ for (
       },
     },
     workflows => {version => 2, autobuild => {
-      jobs => ['build'],
+      jobs => [
+        "build",
+        {"test" => {requires => ['build']}},
+        {"deploy_master" => {requires => ['build', 'test'],
+                              context => ['deploy-context']}},
+      ],
       "triggers" => [
         {
           "schedule" => {
