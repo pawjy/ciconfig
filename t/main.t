@@ -2547,6 +2547,55 @@ for (
       },
     },
   }}}, 'github pages'],
+  [{github => {
+    build => [{docker_build => 'foo.test/bar/z123'}],
+    tests => ['x'],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'docker build -t foo\\.test\\/bar\\/z123 \\.'},
+        {run => 'x'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'github docker_build'],
+  [{github => {
+    tests => ['x', {docker_push => 'foo.test/bar/z123'}],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'x'},
+        {run => 'docker login -u $DOCKER_USER -p $DOCKER_PASS foo\\.test',
+         if => q{${{ github.ref == 'refs/heads/master' }}},
+         env => {
+           DOCKER_USER => q<${{ secrets.DOCKER_USER }}>,
+           DOCKER_PASS => q<${{ secrets.DOCKER_PASS }}>,
+         }},
+        {run => 'docker push foo\\.test\\/bar\\/z123',
+         if => q{${{ github.ref == 'refs/heads/master' }}}},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME=foo.test/bar/z123 bash',
+         if => q{${{ github.ref == 'refs/heads/master' }}},
+         env => {
+           BWALLER_URL => q<${{ secrets.BWALLER_URL }}>,
+         }},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'github docker_push'],
   
   [{droneci => {}} => {'.drone.yml' => {json => {
     kind => 'pipeline',
