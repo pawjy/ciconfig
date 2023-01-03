@@ -1597,7 +1597,12 @@ $Options->{'circleci', 'autobuild'} = {
     my $minute = $time % 60;
     my $branch = $json->{_config}->{default_branch} || 'master';
     $json->{workflows}->{autobuild} = {
-      "jobs" => ["build"],
+      "jobs" => [
+        "build",
+        {"test" => {requires => ['build']}},
+        {"deploy_$branch" => {requires => ['build', 'test'],
+                              context => ['deploy-context']}},
+      ],
       "triggers" => [
         {
           "schedule" => {
