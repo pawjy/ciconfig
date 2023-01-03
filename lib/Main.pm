@@ -75,16 +75,43 @@ sub circle_step ($;%) {
 
 sub github_step ($) {
   my $input = shift;
-  my $output = {};
+  my @output = ({});
   if (ref $input) {
-    $output->{run} = $input->{run} // die "No |run|";
-    for my $name (@{$input->{secrets} or []}) {
-      $output->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+    if ($input->{docker_build}) {
+      my $name = $input->{docker_build};
+      my $path = '.';
+      $output[0]->{run} = 'docker build -t ' . (quotemeta $name) . ' ' . (quotemeta $path);
+    } elsif ($input->{docker_push}) {
+      my $name = $input->{docker_push};
+      if ($name =~ m{^([^/]+)/([^/]+)/([^/]+)$}) {
+        $output[0]->{run} = 'docker login -u $DOCKER_USER -p $DOCKER_PASS '.(quotemeta $1);
+      } else {
+        $output[0]->{run} = 'docker login -u $DOCKER_USER -p $DOCKER_PASS';
+      }
+      for my $name (qw(DOCKER_USER DOCKER_PASS)) {
+        $output[-1]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+      }
+
+      push @output, {run => 'docker push ' . quotemeta $name};
+      push @output, {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=docker BWALL_NAME='.$name.' bash'};
+      for my $name (qw(BWALLER_URL)) {
+        $output[-1]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+      }
+      
+      my $branch_name = 'master';
+      for my $output (@output) {
+        $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
+      }
+    } else {
+      $output[0]->{run} = $input->{run} // die "No |run|";
+      for my $name (@{$input->{secrets} or []}) {
+        $output[0]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+      }
     }
   } else {
-    $output->{run} = $input;
+    $output[0]->{run} = $input;
   }
-  return $output;
+  return @output;
 } # github_step
 
 sub droneci_step ($) {
