@@ -8,6 +8,7 @@ use Main;
 use JSON::PS;
 
 my $machine = {"image" => "ubuntu-2004:202101-01"};
+my $circleci_version = "2.1";
 
 for (
   [{} => {}],
@@ -88,7 +89,7 @@ for (
   }}}],
 
   [{circleci => {}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -101,7 +102,7 @@ for (
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}, 'circleci empty'],
   [{circleci => {'docker-build' => 'abc/def'}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -137,7 +138,7 @@ for (
     ]}},
   }}}, 'circleci docker-build basic 2'],
   [{circleci => {'docker-build' => 'xyz/abc/def'}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -177,7 +178,7 @@ for (
     build_generated_files => [],
     tests => ['test1'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -229,7 +230,7 @@ for (
     build_generated_files => [],
     tests => ['test1'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -282,7 +283,7 @@ for (
     build_generated_files => [],
     tests => ['test1'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -323,7 +324,7 @@ for (
     build => ["echo 2"],
     tests => ["echo 1"],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -386,7 +387,7 @@ for (
   }}}, 'build jobs / docker with tests'],
   [{circleci => {'docker-build' => 'abc/def',
                  context => 'foo-bar'}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -422,7 +423,7 @@ for (
     ]}},
   }}}, 'circleci docker-build with context'],
   [{circleci => {required_docker_images => ['a/b', 'a/b/c']}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -442,7 +443,7 @@ for (
     build_generated_files => [],
     tests => {t1 => ['test1'], t2 => ['test2']},
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -492,7 +493,7 @@ for (
     ]}},
   }}}, 'required_docker_images build with tests'],
   [{circleci => {heroku => 1}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -514,7 +515,7 @@ for (
   [{circleci => {heroku => {
     app_name => 'abcdef',
   }}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -536,7 +537,7 @@ for (
   [{circleci => {heroku => {prepare => [
     'abc', './foo bar',
   ]}}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -560,7 +561,7 @@ for (
   [{circleci => {heroku => {pushed => [
     'abc', './foo bar',
   ]}}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -585,7 +586,7 @@ for (
     heroku => 1,
     build_generated_files => [],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -624,7 +625,7 @@ for (
     build_generated_files => ['foo', 'bar'],
     tests => ['test2'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -675,7 +676,7 @@ for (
     build_generated_pmbp => 1,
     tests => ['test3'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -728,7 +729,7 @@ for (
       t2 => ['test4'],
     },
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -776,7 +777,7 @@ for (
     },
     make_deploy_branches => ['master'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -834,7 +835,7 @@ for (
     },
     make_deploy_branches => ['master', {name => 'devel', buildless => 1}],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -904,7 +905,7 @@ for (
     },
     make_deploy_branches => ['master', {name => 'devel', testless => 1}],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -978,7 +979,7 @@ for (
                              {name => 'devel', testless => 1,
                               awscli => 1}],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1053,7 +1054,7 @@ for (
     ]}},
   }}}, 'Multiple test steps with test-less deploy and awscli'],
   [{circleci => {deploy => ['true', 'false']}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1071,7 +1072,7 @@ for (
     deploy => ['true', 'false'],
     build_generated_files => [],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1104,7 +1105,7 @@ for (
     branch => q{oge"'\\x-},
     commands => ['true', 'false'],
   }}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1121,7 +1122,7 @@ for (
   [{circleci => {
     make_deploy_branches => ['master', 'staging'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1139,7 +1140,7 @@ for (
     make_deploy_branches => ['master', 'staging'],
     build_generated_pmbp => 1,
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1179,7 +1180,7 @@ for (
     ]}},
   }}}, 'make_deploy jobs'],
   [{circleci => {merger => 1}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1216,7 +1217,7 @@ for (
     ]}},
   }}}],
   [{circleci => {merger => {into => 'dev'}}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1253,7 +1254,7 @@ for (
     ]}},
   }}}],
   [{circleci => {awscli => 1}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1273,7 +1274,7 @@ for (
   [{circleci => {deploy_branch => {
     x => [{awscli => 1}],
   }}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1291,7 +1292,7 @@ for (
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {parallel => \1}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       parallelism => 2,
       machine => $machine,
@@ -1307,7 +1308,7 @@ for (
   [{circleci => {
     parallel => 1,
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       parallelism => 2,
       machine => $machine,
@@ -1321,7 +1322,7 @@ for (
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {parallel => 4}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       parallelism => 4,
       machine => $machine,
@@ -1339,7 +1340,7 @@ for (
     parallel => 4,
     tests => ['test1'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1370,7 +1371,7 @@ for (
     ]}},
   }}}, 'parallel 4 build and test'],
   [{circleci => {parallel => 0}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1383,7 +1384,7 @@ for (
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {parallel => \0}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1399,7 +1400,7 @@ for (
     {command => 'a'},
     {command => 'b', branch => 'c'},
   ]}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1417,7 +1418,7 @@ for (
     {command => 'a', parallel => 1},
     {command => 'b', parallel => 0},
   ]}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1434,7 +1435,7 @@ for (
   [{circleci => {build => [
     {command => ['a', 'b']},
   ]}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1453,7 +1454,7 @@ for (
     b1 => ['c'],
     b2 => ['d'],
   }}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1474,7 +1475,7 @@ for (
     b1 => ['c'],
     b2 => ['d'],
   }, build_generated_files => []}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1516,7 +1517,7 @@ for (
   [{circleci => {
     empty => 1,
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {},
     workflows => {version => 2},
   }}}],
@@ -1524,7 +1525,7 @@ for (
     gaa => 1,
     empty => 1,
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {
       gaa4 => {
         machine => $machine,
@@ -1557,7 +1558,7 @@ for (
     }},
   }}}],
   [{circleci => {gaa => 1}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {
       gaa4 => {
         machine => $machine,
@@ -1599,7 +1600,7 @@ for (
     }, build => {jobs => [{'build'=>{}}]}},
   }}}],
   [{circleci => {autobuild => 1}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {
       build => {
         machine => $machine,
@@ -1640,7 +1641,7 @@ for (
     tests => ['test1'],
     tested_branches => ['b2', 'b1'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1675,7 +1676,7 @@ for (
     make_deploy_branches => ['master', 'staging'],
     tested_branches => ['test1'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1697,7 +1698,7 @@ for (
     b1 => ['c'],
     b2 => ['d'],
   }, build_generated_files => []}} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1745,7 +1746,7 @@ for (
     make_deploy_branches => ['master', {name => 'devel', testless => 1}],
     tested_branches => ['xyz'],
   }} => {'.circleci/config.yml' => {json => {
-    version => 2,
+    version => $circleci_version,
     jobs => {build => {
       machine => $machine,
       environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
@@ -1812,6 +1813,54 @@ for (
                          context => ['deploy-context']}},
     ]}},
   }}}, 'Multiple test steps with test-less deploy + tested_branches'],
+  [{circleci => {
+    params => ['ab', 'x_y'],
+    build_generated_files => [],
+    tests => ['test1'],
+  }} => {'.circleci/config.yml' => {json => {
+    version => $circleci_version,
+    parameters => {
+      ab => {
+        type => 'string',
+        default => '',
+      },
+      'x_y' => {
+        type => 'string',
+        default => '',
+      },
+    },
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build',
+                      AB => '<< pipeline.parameters.ab >>',
+                      X_Y => '<< pipeline.parameters.x_y >>'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+        {"persist_to_workspace" => {
+          "root" => "./",
+          "paths" => ['.ciconfigtemp'],
+        }},
+      ],
+    }, test => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test',
+                      AB => '<< pipeline.parameters.ab >>',
+                      X_Y => '<< pipeline.parameters.x_y >>'},
+      steps => [
+        'checkout',
+        {"attach_workspace" => {"at" => "./"}},
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => 'test1'}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+    workflows => {version => 2, build => {jobs => [
+      {'build'=> {}},
+      {test => {requires => ['build']}},
+    ]}},
+  }}}, 'params'],
   
   [{github => {pmbp => 'latest'}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
@@ -5046,7 +5095,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2018-2022 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2023 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

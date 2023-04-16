@@ -190,8 +190,15 @@ my $Platforms = {
     file => '.circleci/config.yml',
     set => sub {
       my $json = $_[0];
-      $json->{version} = 2;
+      $json->{version} = "2.1";
       $json->{workflows}->{version} = 2;
+
+      my $params = delete $json->{_params} || {};
+      for my $name (keys %$params) {
+        $json->{parameters}->{$name}->{type} = 'string';
+        $json->{parameters}->{$name}->{default} = '';
+      }
+      
       $json->{jobs} ||= {};
       if (delete $json->{_empty}) {
         for (qw(_build _test _deploy _deploy_jobs)) {
@@ -249,6 +256,9 @@ my $Platforms = {
         for my $job_name (@job_name) {
           $json->{jobs}->{$job_name} = new_job;
           $json->{jobs}->{$job_name}->{environment}->{CIRCLE_ARTIFACTS} = '/tmp/circle-artifacts/' . $job_name;
+          for my $pname (keys %$params) {
+            $json->{jobs}->{$job_name}->{environment}->{uc $pname} = '<< pipeline.parameters.'.$pname.' >>';
+          }
           $json->{jobs}->{$job_name}->{steps} = [
             @$loads,
             circle_step ('mkdir -p $CIRCLE_ARTIFACTS'),
@@ -1549,6 +1559,12 @@ $Options->{'circleci', 'empty'} = {
   },
 };
 
+$Options->{'circleci', 'params'} = {
+  set => sub {
+    $_[0]->{_params}->{$_} = 1 for @{$_[1]};
+  },
+};
+
 $Options->{'circleci', 'gaa'} = {
   set => sub {
     my $json = $_[0];
@@ -1736,7 +1752,7 @@ sub generate ($$$;%) {
 
 =head1 LICENSE
 
-Copyright 2018-2022 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2023 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
