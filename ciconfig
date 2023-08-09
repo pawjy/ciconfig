@@ -2603,7 +2603,7 @@ sub github_step ($) {
         $output[-1]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
       }
       
-      my $branch_name = 'master';
+      my $branch_name = $input->{branch} // 'master';
       for my $output (@output) {
         $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
       }
@@ -4257,7 +4257,7 @@ sub generate ($$$;%) {
 
 =head1 LICENSE
 
-Copyright 2018-2022 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2023 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
