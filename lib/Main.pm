@@ -98,7 +98,7 @@ sub github_step ($) {
         $output[-1]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
       }
       
-      my $branch_name = 'master';
+      my $branch_name = $input->{branch} // 'master';
       for my $output (@output) {
         $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
       }
