@@ -2601,6 +2601,45 @@ for (
       },
     },
   }}}, 'github pages'],
+  [{github => {pages => {
+    branch => 'abc/def',
+  }}} => {'.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      push => {
+        branches => ['abc/def'],
+      },
+      workflow_dispatch => {},
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v3'},
+          {run => 'make build-github-pages'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v1',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@main'},
+        ],
+      },
+    },
+  }}}, 'github pages with branch'],
   [{github => {
     build => [{docker_build => 'foo.test/bar/z123'}],
     tests => ['x'],
@@ -2679,7 +2718,7 @@ for (
          with => {path => '/tmp/circle-artifacts/test'}},
       ],
     }},
-  }}}, 'github docker_push'],
+  }}}, 'github docker_push with branch'],
   
   [{droneci => {}} => {'.drone.yml' => {json => {
     kind => 'pipeline',
