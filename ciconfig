@@ -3377,12 +3377,12 @@ my $Platforms = {
              with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
       }
 
-      if ($input->{_github_pages}) {
+      if (my $pp = $input->{_github_pages}) {
         my $json = $output->{'.github/workflows/pages.yml'} = {
           name => 'pages',
           on => {
             push => {
-              branches => ['master'],
+              branches => [$pp->{branch} // 'master'],
             },
             workflow_dispatch => {},
           },
@@ -4475,7 +4475,7 @@ $Options->{'github', 'pages'} = {
     my $json = $_[0];
     return unless $_[1];
 
-    $json->{_github_pages} = 1;
+    $json->{_github_pages} = ref $_[1] ? $_[1] : {};
   },
 };
 
