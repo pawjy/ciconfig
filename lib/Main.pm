@@ -463,7 +463,7 @@ my $Platforms = {
         } # artifacts
         
         unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v2'};
+            {"uses" => 'actions/checkout@v3'};
 
         my $matrix = [{experimental => \0}];
         my $matrix_touched = 0;
@@ -567,7 +567,7 @@ my $Platforms = {
         };
 
         unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v2',
+            {"uses" => 'actions/checkout@v3',
              with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
       }
 
@@ -586,7 +586,7 @@ my $Platforms = {
         };
 
         unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v2',
+            {"uses" => 'actions/checkout@v3',
              with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
       }
 
@@ -626,7 +626,7 @@ my $Platforms = {
         push @{$job->{steps}},
             github_step 'make build-github-pages';
         push @{$job->{steps}},
-            {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
+            {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
             {name => 'Upload artifact',
              uses => 'actions/upload-pages-artifact@v1',
              with => {path => '.'}},

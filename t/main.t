@@ -1874,7 +1874,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1899,7 +1899,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1924,7 +1924,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1949,7 +1949,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1972,7 +1972,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2048,7 +2048,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2114,7 +2114,7 @@ for (
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v2',
+        {uses => 'actions/checkout@v3',
          with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
         {run => 'git config --global user.email "temp@github.test"'},
         {run => 'git config --global user.name "GitHub Actions"'},
@@ -2134,7 +2134,7 @@ for (
       if => q{${{ github.ref == 'refs/heads/fuga' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v2',
+        {uses => 'actions/checkout@v3',
          with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
         {run => 'git config --global user.email "temp@github.test"'},
         {run => 'git config --global user.name "GitHub Actions"'},
@@ -2154,7 +2154,7 @@ for (
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v2',
+        {uses => 'actions/checkout@v3',
          with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
         {run => 'git config --global user.email "temp@github.test"'},
         {run => 'git config --global user.name "GitHub Actions"'},
@@ -2173,7 +2173,7 @@ for (
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v2',
+        {uses => 'actions/checkout@v3',
          with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
         {run => 'git config --global user.email "temp@github.test"'},
         {run => 'git config --global user.name "GitHub Actions"'},
@@ -2192,7 +2192,7 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'b'},
         {run => 'a'},
@@ -2208,7 +2208,7 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {uses => 'actions/upload-artifact@v3',
@@ -2230,7 +2230,7 @@ for (
                    'fail-fast' => \0},
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {uses => 'actions/upload-artifact@v3',
@@ -2255,7 +2255,7 @@ for (
                    'fail-fast' => \0},
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {run => 'b'},
@@ -2280,7 +2280,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2305,7 +2305,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2336,7 +2336,7 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2443,7 +2443,7 @@ for (
               'BAR' => '${{ matrix.env_BAR }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2555,7 +2555,7 @@ for (
               'BAR' => '${{ matrix.env_BAR }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2591,7 +2591,7 @@ for (
         steps => [
           {name => 'Checkout', uses => 'actions/checkout@v3'},
           {run => 'make build-github-pages'},
-          {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
           {name => 'Upload artifact',
            uses => 'actions/upload-pages-artifact@v1',
            with => {path => '.'}},
@@ -2630,7 +2630,7 @@ for (
         steps => [
           {name => 'Checkout', uses => 'actions/checkout@v3'},
           {run => 'make build-github-pages'},
-          {name => 'Setup pages', uses => 'actions/configure-pages@v1'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
           {name => 'Upload artifact',
            uses => 'actions/upload-pages-artifact@v1',
            with => {path => '.'}},
@@ -2650,7 +2650,7 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'docker build -t foo\\.test\\/bar\\/z123 \\.'},
         {run => 'x'},
@@ -2668,7 +2668,7 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'x'},
         {run => 'docker login -u $DOCKER_USER -p $DOCKER_PASS foo\\.test',
@@ -2698,7 +2698,7 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v3'},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'x'},
         {run => 'docker login -u $DOCKER_USER -p $DOCKER_PASS foo\\.test',
