@@ -114,6 +114,25 @@ sub github_step ($) {
   return @output;
 } # github_step
 
+sub github_checkout_steps () {
+  return (
+    {
+      "uses" => 'actions/checkout@v3',
+      "with" => {
+        "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+        "ref" => "master",
+        "fetch-depth" => 0,
+      }
+    },
+    {
+      "run" => 'git config --global user.name "GitHub Actions"'
+    },
+    {
+      "run" => 'git config --global user.email "temp@github.test"'
+    },
+  );
+} # github_checkout_steps
+
 sub droneci_step ($) {
   my ($input) = @_;
   my $outputs = [];
@@ -547,9 +566,12 @@ my $Platforms = {
           push @{$job->{needs} ||= []}, 'test';
         }
 
+        unshift @{$job->{steps}}, github_checkout_steps
+            if $input->{_branch_github_deploy_need_checkout}->{$branch_name};
+        
         ## <https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idpermissions>
         ## <https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token>
-        $job->{permissions}->{contents} = 'write';
+        #$job->{permissions}->{contents} = 'write';
       }
 
       for my $branch_name (keys %{$input->{_branch_github_batch_jobs} or {}}) {
@@ -566,9 +588,7 @@ my $Platforms = {
           steps => [map { github_step $_ } @{$input->{_branch_github_batch_jobs}->{$branch_name} or []}],
         };
 
-        unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v3',
-             with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
+        unshift @{$job->{steps}}, github_checkout_steps;
       }
 
       for my $hook_name (sort { $a cmp $b }
@@ -585,9 +605,7 @@ my $Platforms = {
           steps => [map { github_step $_ } @{$input->{_github_hook_jobs}->{$hook_name} or []}],
         };
 
-        unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v3',
-             with => {token => q{${{ secrets.GH_ACCESS_TOKEN }}}}};
+        unshift @{$job->{steps}}, github_checkout_steps;
       }
 
       if (my $pp = $input->{_github_pages}) {
@@ -1140,8 +1158,8 @@ $Options->{'github', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
-          {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into '.$into.'\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-           secrets => ['GH_ACCESS_TOKEN']};
+          {run => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+          {run => 'git push origin master'};
       for my $repo (@$needs) {
         push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
             {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/'.$repo.'/dispatches"',
@@ -1150,6 +1168,7 @@ $Options->{'github', 'merger'} = {
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
           {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\\/heads\\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
            secrets => ['BWALLER_URL']};
+      $json->{_branch_github_deploy_need_checkout}->{$branch} = 1;
     } # $branch
   },
 };
@@ -1647,8 +1666,6 @@ $Options->{'github', 'gaa'} = {
     }
     my $branch = $json->{_config}->{default_branch} || 'master';
     push @{$json->{_branch_github_batch_jobs}->{$branch} ||= []},
-        'git config --global user.email "temp@github.test"',
-        'git config --global user.name "GitHub Actions"',
         @$build,
         "make updatenightly",
         "git diff-index --quiet HEAD --cached || git commit -m auto",
@@ -1662,8 +1679,6 @@ $Options->{'github', 'updatebyhook'} = {
     my $json = $_[0];
     return unless $_[1];
     push @{$json->{_github_hook_jobs}->{needupdate} ||= []},
-        'git config --global user.email "temp@github.test"',
-        'git config --global user.name "GitHub Actions"',
         "make updatebyhook",
         "git diff-index --quiet HEAD --cached || git commit -m updatebyhook",
         "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
