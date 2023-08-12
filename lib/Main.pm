@@ -1158,7 +1158,7 @@ $Options->{'github', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
-          {run => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+          {run => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
           {run => 'git push origin master'};
       for my $repo (@$needs) {
         push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
