@@ -29,16 +29,27 @@
          "needs" : [
             "test"
          ],
-         "permissions" : {
-            "contents" : "write"
-         },
          "runs-on" : "ubuntu-latest",
          "steps" : [
             {
-               "env" : {
-                  "GH_ACCESS_TOKEN" : "${{ secrets.GH_ACCESS_TOKEN }}"
+               "uses" : "actions/checkout@v3",
+               "with": {
+                   "ssh-key": "${{ secrets.GH_GIT_KEY }}"
                },
-               "run" : "curl -f -s -S --request POST --header \u0022Authorization:token $GH_ACCESS_TOKEN\u0022 --header \u0022Content-Type:application/json\u0022 --data-binary \u0022{\u005C\u0022base\u005C\u0022:\u005C\u0022master\u005C\u0022,\u005C\u0022head\u005C\u0022:\u005C\u0022$GITHUB_SHA\u005C\u0022,\u005C\u0022commit_message\u005C\u0022:\u005C\u0022auto-merge $GITHUB_REF into master\u005C\u0022}\u0022 \u0022https://api.github.com/repos/$GITHUB_REPOSITORY/merges\u0022"
+               "ref": "master",
+               "fetch-depth": 0
+            },
+            {
+               "run" : "git config --global user.email \u0022temp@github.test\u0022"
+            },
+            {
+               "run" : "git config --global user.name \u0022GitHub Actions\u0022"
+            },
+            {
+               "run": "git merge $GITHUB_REF -m 'auto-merge $GITHUB_REF into master'"
+            },
+            {
+               "run" : "git push origin master"
             },
             {
                "env" : {
