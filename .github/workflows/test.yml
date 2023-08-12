@@ -46,7 +46,7 @@
                "run" : "git config --global user.name \u0022GitHub Actions\u0022"
             },
             {
-               "run": "git merge $GITHUB_REF -m 'auto-merge $GITHUB_REF into master'"
+               "run": 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA '
             },
             {
                "run" : "git push origin master"
