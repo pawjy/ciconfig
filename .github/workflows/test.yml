@@ -22,7 +22,7 @@
                "run" : "git config --global user.email \u0022temp@github.test\u0022"
             },
             {
-               "run" : "git merge -m \u0022auto-merge $GITHUB_SHA ($GITHUB_REF) into master\u0022 $GITHUB_SHA"
+               "run" : "git merge -m \u0022auto-merge $GITHUB_REF ($GITHUB_SHA) into master\u0022 $GITHUB_SHA"
             },
             {
                "run" : "git push origin master"
@@ -57,7 +57,7 @@
                "run" : "git config --global user.email \u0022temp@github.test\u0022"
             },
             {
-               "run" : "git merge -m \u0022auto-merge $GITHUB_SHA ($GITHUB_REF) into master\u0022 $GITHUB_SHA"
+               "run" : "git merge -m \u0022auto-merge $GITHUB_REF ($GITHUB_SHA) into master\u0022 $GITHUB_SHA"
             },
             {
                "run" : "git push origin master"
