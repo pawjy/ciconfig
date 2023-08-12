@@ -1987,20 +1987,38 @@ for (
     jobs => {deploy_github_nightly => {
       if => q{${{ github.ref == 'refs/heads/nightly' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+        {run => 'git push origin master'},
         {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
          env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+        {run => 'git push origin master'},
         {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
          env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
@@ -2012,10 +2030,19 @@ for (
     jobs => {deploy_github_nightly => {
       if => q{${{ github.ref == 'refs/heads/nightly' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+        {run => 'git push origin master'},
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/foo/bar/dispatches"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
         {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
@@ -2024,10 +2051,19 @@ for (
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+        {run => 'git push origin master'},
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/foo/bar/dispatches"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
         {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
@@ -2058,22 +2094,40 @@ for (
     }, deploy_github_nightly => {
       if => q{${{ github.ref == 'refs/heads/nightly' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       needs => ['test'],
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+        {run => 'git push origin master'},
         {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
          env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }, deploy_github_staging => {
       if => q{${{ github.ref == 'refs/heads/staging' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       needs => ['test'],
       steps => [
-        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"master\",\"head\":\"$GITHUB_SHA\",\"commit_message\":\"auto-merge $GITHUB_REF into master\"}" "https://api.github.com/repos/$GITHUB_REPOSITORY/merges"',
-         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_SHA ($GITHUB_REF) into master" $GITHUB_SHA'},
+        {run => 'git push origin master'},
         {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
          env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
@@ -2085,7 +2139,6 @@ for (
     jobs => {deploy_github_master => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/test1/test2/dispatches"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
@@ -2100,7 +2153,6 @@ for (
     jobs => {deploy_github_hoge => {
       if => q{${{ github.ref == 'refs/heads/hoge' }}},
       'runs-on' => 'ubuntu-latest',
-      permissions => {contents => 'write'},
       steps => [
         {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/test1/test2/dispatches"',
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
@@ -2114,10 +2166,16 @@ for (
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v3',
-         with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
-        {run => 'git config --global user.email "temp@github.test"'},
-        {run => 'git config --global user.name "GitHub Actions"'},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
         {run => 'make deps'},
         {run => 'make updatenightly'},
         {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
@@ -2134,10 +2192,16 @@ for (
       if => q{${{ github.ref == 'refs/heads/fuga' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v3',
-         with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
-        {run => 'git config --global user.email "temp@github.test"'},
-        {run => 'git config --global user.name "GitHub Actions"'},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
         {run => 'make deps'},
         {run => 'make updatenightly'},
         {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
@@ -2154,10 +2218,16 @@ for (
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v3',
-         with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
-        {run => 'git config --global user.email "temp@github.test"'},
-        {run => 'git config --global user.name "GitHub Actions"'},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
         {run => 'foo'},
         {run => 'a b ${{ a.b }}'},
         {run => 'make updatenightly'},
@@ -2173,10 +2243,16 @@ for (
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
       steps => [
-        {uses => 'actions/checkout@v3',
-         with => {token => '${{ secrets.GH_ACCESS_TOKEN }}'}},
-        {run => 'git config --global user.email "temp@github.test"'},
-        {run => 'git config --global user.name "GitHub Actions"'},
+        {
+          "uses" => 'actions/checkout@v3',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
         {run => 'make updatebyhook'},
         {run => 'git diff-index --quiet HEAD --cached || git commit -m updatebyhook'},
         {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
