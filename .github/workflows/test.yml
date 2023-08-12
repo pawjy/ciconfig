@@ -34,10 +34,10 @@
             {
                "uses" : "actions/checkout@v3",
                "with": {
-                   "ssh-key": "${{ secrets.GH_GIT_KEY }}"
-               },
-               "ref": "master",
-               "fetch-depth": 0
+                   "ssh-key": "${{ secrets.GH_GIT_KEY }}",
+                   "ref": "master",
+                   "fetch-depth": 0
+               }
             },
             {
                "run" : "git config --global user.email \u0022temp@github.test\u0022"
