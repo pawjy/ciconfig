@@ -1733,6 +1733,7 @@ sub generate ($$$;%) {
   my $config = delete $input->{config} || {};
 
   for my $platform (sort { $a cmp $b } keys %$input) {
+    next if $platform =~ /^#/;
     my $p_def = $Platforms->{$platform};
     die "Unknown platform |$platform|" unless defined $p_def;
     my $json = {};
@@ -1740,6 +1741,7 @@ sub generate ($$$;%) {
     local $json->{_config} = $config;
 
     for my $opt (sort { $a cmp $b } keys %{$input->{$platform}}) {
+      next if $opt =~ /^#/;
       my $o_def = $Options->{$platform, $opt};
       die "Unknown option |$platform|, |$opt|" unless defined $o_def;
       my $o_param = $input->{$platform}->{$opt};
