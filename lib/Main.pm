@@ -8,6 +8,17 @@ sub shellquote ($) {
   return "'$s'";
 } # shellquote
 
+sub random_hm ($$) {
+  my ($input, $key) = @_;
+  my $time = $input->{_random_day_time};
+  $time += ord $_ for split //, $key;
+  $time %= (24*60);
+  
+  my $hour = int ($time / 60);
+  my $minute = $time % 60;
+  return ($hour, $minute);
+} # random_hm
+
 sub install_awscli_command () {
   return join "\n",
         "(((sudo apt-cache search python-dev | grep ^python-dev) || ".
@@ -578,8 +589,7 @@ my $Platforms = {
         ## has similar
         my $json = $output->{'.github/workflows/cron.yml'} ||= {};
         $json->{name} = 'cron';
-        my $hour = int ($input->{_random_day_time} / 60);
-        my $minute = ($input->{_random_day_time}) % 60;
+        my ($hour, $minute) = random_hm $input, 'github.cron.' . $branch_name;
         $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
 
         my $job = $json->{jobs}->{'batch_github_' . $branch_name} = {
@@ -1609,8 +1619,7 @@ $Options->{'circleci', 'gaa'} = {
         circle_step ("git diff-index --quiet HEAD --cached || git commit -m auto", deploy => 1),
         circle_step ("git push origin +`git rev-parse HEAD`:refs/heads/nightly", deploy => 1),
     ];
-    my $hour = int ($json->{_random_day_time} / 60);
-    my $minute = ($json->{_random_day_time}) % 60;
+    my ($hour, $minute) = random_hm $json, "circleci.gaa";
     my $branch = $json->{_config}->{default_branch} || 'master';
     $json->{workflows}->{gaa4} = {
       "jobs" => ["gaa4"],
@@ -1636,9 +1645,7 @@ $Options->{'circleci', 'autobuild'} = {
   set => sub {
     my $json = $_[0];
     return unless $_[1];
-    my $time = ($json->{_random_day_time} + 60*60) % (24*60);
-    my $hour = int ($time / 60);
-    my $minute = $time % 60;
+    my ($hour, $minute) = random_hm $json, 'circleci.autobuild';
     my $branch = $json->{_config}->{default_branch} || 'master';
     $json->{workflows}->{autobuild} = {
       "jobs" => [
