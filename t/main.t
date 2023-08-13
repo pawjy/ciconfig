@@ -12,6 +12,7 @@ my $circleci_version = "2.1";
 
 for (
   [{} => {}],
+  [{"#abc"} => {}],
 
   [{meta => {}} => {}, 'meta empty'],
 
@@ -1862,6 +1863,8 @@ for (
     ]}},
   }}}, 'params'],
   
+  [{github => {}} => {'.github/workflows/test.yml' => {remove => 1}}, 'github empty'],
+  [{github => {"#hoge" => 1}} => {'.github/workflows/test.yml' => {remove => 1}}, 'github empty'],
   [{github => {pmbp => 'latest'}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
     on => {push => {}},
