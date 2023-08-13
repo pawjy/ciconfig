@@ -3371,6 +3371,12 @@ my $Platforms = {
         ## <https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token>
         #$job->{permissions}->{contents} = 'write';
       }
+      
+      if ($input->{_autobuild}) {
+        my $json = $output->{'.github/workflows/test.yml'} or die "No |tests| or deploy";
+        my ($hour, $minute) = random_hm $input, 'github.autobuild';
+        $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
+      }
 
       for my $branch_name (keys %{$input->{_branch_github_batch_jobs} or {}}) {
         ## has similar
@@ -4474,6 +4480,15 @@ $Options->{'github', 'gaa'} = {
         "git diff-index --quiet HEAD --cached || git commit -m auto",
         "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
         ;
+  },
+};
+
+$Options->{'github', 'autobuild'} = {
+  set => sub {
+    my $json = $_[0];
+    return unless $_[1];
+
+    $json->{_autobuild} = 1;
   },
 };
 
