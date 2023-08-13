@@ -2295,6 +2295,25 @@ for (
     }},
   }}}, 'updatebyhook'],
   [{github => {
+    build => [{run => 'a', branch => "a/b"}],
+    tests => ["b"],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v3'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'a', if => q{${{ github.ref == 'refs/heads/a/b' }}}},
+        {run => 'b'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'build with branch'],
+  [{github => {
     build => ['b'], tests => ['a'],
   }} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
@@ -2312,6 +2331,25 @@ for (
       ],
     }},
   }}}, 'tests'],
+  [{github => {
+    build => ["b"],
+    tests => [{run => 'a', branch => "a/b"}],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v3'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'b'},
+        {run => 'a', if => q{${{ github.ref == 'refs/heads/a/b' }}}},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'tests with branch'],
   [{github => {tests => ['a']}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
     on => {push => {}},
