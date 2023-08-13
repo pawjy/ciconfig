@@ -2958,7 +2958,7 @@ my $Platforms = {
           push @$build_steps, github_step $_;
         }
       }
-      
+
       if (@$test_steps) {
         ## has similar
         my $json = $output->{'.github/workflows/test.yml'} = {};
@@ -3114,14 +3114,11 @@ my $Platforms = {
       }
 
       if (my $pp = $input->{_github_pages}) {
+        my $wait = (@$test_steps or
+                    $input->{_branch_github_deploy_jobs}->{$pp->{branch} // 'master'});
+        
         my $json = $output->{'.github/workflows/pages.yml'} = {
           name => 'pages',
-          on => {
-            push => {
-              branches => [$pp->{branch} // 'master'],
-            },
-            workflow_dispatch => {},
-          },
           permissions => {
             contents => 'read',
             pages => 'write',
@@ -3143,6 +3140,18 @@ my $Platforms = {
             },
           },
         };
+        if ($wait) {
+          $json->{on}->{workflow_run} = {
+            branches => [$pp->{branch} // 'master'],
+            workflows => ['test'],
+            types => ['completed'],
+          };
+          $json->{jobs}->{deploy}->{if} = q{${{ github.event.workflow_run.conclusion == 'success' }}};
+        } else {
+          $json->{on}->{push} = {
+            branches => [$pp->{branch} // 'master'],
+          };
+        }
         my $job = $json->{jobs}->{deploy};
         push @{$job->{steps}},
             {name => 'Checkout', uses => 'actions/checkout@v3'};

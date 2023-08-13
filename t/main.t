@@ -2646,7 +2646,6 @@ for (
       push => {
         branches => ['master'],
       },
-      workflow_dispatch => {},
     },
     permissions => {
       contents => 'read',
@@ -2685,7 +2684,6 @@ for (
       push => {
         branches => ['abc/def'],
       },
-      workflow_dispatch => {},
     },
     permissions => {
       contents => 'read',
@@ -2716,6 +2714,116 @@ for (
       },
     },
   }}}, 'github pages with branch'],
+  [{github => {pages => 1,
+               tests => ['a']}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v3'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'a'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}, '.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      workflow_run => {
+        branches => ['master'],
+        types => ['completed'],
+        workflows => ['test'],
+      },
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        if => q{${{ github.event.workflow_run.conclusion == 'success' }}},
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v3'},
+          {run => 'make build-github-pages'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v1',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@main'},
+        ],
+      },
+    },
+  }}}, 'github pages and tests'],
+  [{github => {pages => {
+    branch => 'abc/def',
+  }, tests => ['a'],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v3'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'a'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}, '.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      workflow_run => {
+        branches => ['abc/def'],
+        types => ['completed'],
+        workflows => ['test'],
+      },
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        if => q{${{ github.event.workflow_run.conclusion == 'success' }}},
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v3'},
+          {run => 'make build-github-pages'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v1',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@main'},
+        ],
+      },
+    },
+  }}}, 'github pages with branch and tests'],
   [{github => {
     build => [{docker_build => 'foo.test/bar/z123'}],
     tests => ['x'],
