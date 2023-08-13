@@ -2593,6 +2593,7 @@ sub github_step ($) {
   my $input = shift;
   my @output = ({});
   if (ref $input) {
+    my $branch_name = $input->{branch};
     if ($input->{docker_build}) {
       my $name = $input->{docker_build};
       my $path = '.';
@@ -2613,15 +2614,18 @@ sub github_step ($) {
       for my $name (qw(BWALLER_URL)) {
         $output[-1]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
       }
-      
-      my $branch_name = $input->{branch} // 'master';
-      for my $output (@output) {
-        $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
-      }
+
+      $branch_name //= 'master';
     } else {
       $output[0]->{run} = $input->{run} // die "No |run|";
       for my $name (@{$input->{secrets} or []}) {
         $output[0]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+      }
+    }
+
+    if (defined $branch_name) {
+      for my $output (@output) {
+        $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
       }
     }
   } else {
