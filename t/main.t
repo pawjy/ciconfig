@@ -1545,7 +1545,7 @@ for (
       "triggers" => [
         {
           "schedule" => {
-            "cron" => "23 13 * * *",
+            "cron" => "56 8 * * *",
             "filters" => {
               "branches" => {
                 "only" => [
@@ -1587,7 +1587,7 @@ for (
       "triggers" => [
         {
           "schedule" => {
-            "cron" => "4 13 * * *",
+            "cron" => "37 8 * * *",
             "filters" => {
               "branches" => {
                 "only" => [
@@ -1623,7 +1623,7 @@ for (
       "triggers" => [
         {
           "schedule" => {
-            "cron" => "10 1 * * *",
+            "cron" => "55 19 * * *",
             "filters" => {
               "branches" => {
                 "only" => [
@@ -2164,7 +2164,7 @@ for (
   }}}, 'needupdate default branch'],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
-    on => {schedule => [{cron => '2 13 * * *'}]},
+    on => {schedule => [{cron => '23 19 * * *'}]},
     jobs => {batch_github_master => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',
@@ -2190,7 +2190,7 @@ for (
     default_branch => 'fuga',
   }, github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
-    on => {schedule => [{cron => '56 13 * * *'}]},
+    on => {schedule => [{cron => '24 16 * * *'}]},
     jobs => {batch_github_fuga => {
       if => q{${{ github.ref == 'refs/heads/fuga' }}},
       'runs-on' => 'ubuntu-latest',
@@ -2216,7 +2216,7 @@ for (
     build => ['foo', 'a b ${{ a.b }}'],
   }}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
-    on => {schedule => [{cron => '30 14 * * *'}]},
+    on => {schedule => [{cron => '51 20 * * *'}]},
     jobs => {batch_github_master => {
       if => q{${{ github.ref == 'refs/heads/master' }}},
       'runs-on' => 'ubuntu-latest',

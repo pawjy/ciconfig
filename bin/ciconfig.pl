@@ -19,7 +19,8 @@ my $input_path = $root_path->child ('config/ci.json');
 my $input_bytes = $input_path->slurp;
 my $input = json_bytes2perl ($input_bytes);
 
-my $output = Main->generate ($input, $root_path, input_length => length $input_bytes);
+my $output = Main->generate ($input, $root_path,
+                             input_length => (length $input_bytes) + (length $root_path));
 
 for my $name (sort { $a cmp $b } keys %$output) {
   my $path = $root_path->child ($name);
@@ -46,7 +47,7 @@ for my $name (sort { $a cmp $b } keys %$output) {
 
 =head1 LICENSE
 
-Copyright 2018-2020 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2023 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
