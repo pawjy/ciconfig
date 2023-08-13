@@ -2162,6 +2162,20 @@ for (
       ],
     }},
   }}}, 'needupdate default branch'],
+  [{github => {
+    needupdate => ['master'], autobuild => 1,
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}, schedule => [{cron => "36 17 * * *"}]},
+    jobs => {deploy_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/master/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}}, 'needupdate autobuild'],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
     on => {schedule => [{cron => '23 19 * * *'}]},
@@ -2239,6 +2253,24 @@ for (
       ],
     }},
   }}}, 'gaa with build steps'],
+  [{github => {
+    build => ['b'], tests => ['a'], autobuild => 1,
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}, schedule => [{cron => "6 18 * * *"}]},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v3'},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'b'},
+        {run => 'a'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'github autobuild'],
   [{github => {updatebyhook => 1}} => {'.github/workflows/hook.yml' => {json => {
     name => 'hook',
     on => {repository_dispatch => {types => ['needupdate']}},
