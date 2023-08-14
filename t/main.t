@@ -1877,7 +1877,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1902,7 +1905,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1927,7 +1933,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1952,7 +1961,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -1975,7 +1987,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2087,7 +2102,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2262,7 +2280,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'b'},
         {run => 'a'},
@@ -2304,7 +2325,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a', if => q{${{ github.ref == 'refs/heads/a/b' }}}},
         {run => 'b'},
@@ -2322,7 +2346,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'b'},
         {run => 'a'},
@@ -2341,7 +2368,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'b'},
         {run => 'a', if => q{${{ github.ref == 'refs/heads/a/b' }}}},
@@ -2357,7 +2387,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {uses => 'actions/upload-artifact@v3',
@@ -2379,7 +2412,10 @@ for (
                    'fail-fast' => \0},
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {uses => 'actions/upload-artifact@v3',
@@ -2404,7 +2440,10 @@ for (
                    'fail-fast' => \0},
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {run => 'b'},
@@ -2429,7 +2468,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2454,7 +2496,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2485,7 +2530,10 @@ for (
       env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2592,7 +2640,10 @@ for (
               'BAR' => '${{ matrix.env_BAR }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2704,7 +2755,10 @@ for (
               'BAR' => '${{ matrix.env_BAR }}',
               CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'make test-deps'},
         {run => 'make test'},
@@ -2737,7 +2791,10 @@ for (
         },
         'runs-on' => 'ubuntu-latest',
         steps => [
-          {name => 'Checkout', uses => 'actions/checkout@v2'},
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
           {run => 'make build-github-pages'},
           {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
           {name => 'Upload artifact',
@@ -2775,7 +2832,10 @@ for (
         },
         'runs-on' => 'ubuntu-latest',
         steps => [
-          {name => 'Checkout', uses => 'actions/checkout@v2'},
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
           {run => 'make build-github-pages'},
           {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
           {name => 'Upload artifact',
@@ -2795,7 +2855,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {uses => 'actions/upload-artifact@v3',
@@ -2829,7 +2892,10 @@ for (
         'runs-on' => 'ubuntu-latest',
         if => q{${{ github.event.workflow_run.conclusion == 'success' }}},
         steps => [
-          {name => 'Checkout', uses => 'actions/checkout@v2'},
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
           {run => 'make build-github-pages'},
           {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
           {name => 'Upload artifact',
@@ -2851,7 +2917,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'a'},
         {uses => 'actions/upload-artifact@v3',
@@ -2885,7 +2954,10 @@ for (
         'runs-on' => 'ubuntu-latest',
         if => q{${{ github.event.workflow_run.conclusion == 'success' }}},
         steps => [
-          {name => 'Checkout', uses => 'actions/checkout@v2'},
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
           {run => 'make build-github-pages'},
           {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
           {name => 'Upload artifact',
@@ -2907,7 +2979,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'docker build -t foo\\.test\\/bar\\/z123 \\.'},
         {run => 'x'},
@@ -2925,7 +3000,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'x'},
         {run => 'docker login -u $DOCKER_USER -p $DOCKER_PASS foo\\.test',
@@ -2955,7 +3033,10 @@ for (
       'runs-on' => 'ubuntu-latest',
       env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
       steps => [
-        {uses => 'actions/checkout@v2'},
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
         {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
         {run => 'x'},
         {run => 'docker login -u $DOCKER_USER -p $DOCKER_PASS foo\\.test',

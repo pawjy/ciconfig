@@ -497,7 +497,10 @@ my $Platforms = {
         } # artifacts
         
         unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v2'};
+            {"uses" => 'actions/checkout@v2',
+             "with" => {
+               "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+             }};
 
         my $matrix = [{experimental => \0}];
         my $matrix_touched = 0;
@@ -669,7 +672,10 @@ my $Platforms = {
         }
         my $job = $json->{jobs}->{deploy};
         push @{$job->{steps}},
-            {name => 'Checkout', uses => 'actions/checkout@v2'};
+            {name => 'Checkout', uses => 'actions/checkout@v2',
+             "with" => {
+               "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+             }};
         push @{$job->{steps}},
             github_step 'make build-github-pages';
         push @{$job->{steps}},
