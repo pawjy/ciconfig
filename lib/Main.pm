@@ -132,7 +132,7 @@ sub github_step ($) {
 sub github_checkout_steps () {
   return (
     {
-      "uses" => 'actions/checkout@v3',
+      "uses" => 'actions/checkout@v2',
       "with" => {
         "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
         "ref" => "master",
@@ -497,7 +497,7 @@ my $Platforms = {
         } # artifacts
         
         unshift @{$job->{steps}},
-            {"uses" => 'actions/checkout@v3'};
+            {"uses" => 'actions/checkout@v2'};
 
         my $matrix = [{experimental => \0}];
         my $matrix_touched = 0;
@@ -669,7 +669,7 @@ my $Platforms = {
         }
         my $job = $json->{jobs}->{deploy};
         push @{$job->{steps}},
-            {name => 'Checkout', uses => 'actions/checkout@v3'};
+            {name => 'Checkout', uses => 'actions/checkout@v2'};
         push @{$job->{steps}},
             github_step 'make build-github-pages';
         push @{$job->{steps}},
