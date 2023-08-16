@@ -1193,6 +1193,8 @@ $Options->{'github', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
+          {run => 'git fetch --unshallow origin master'},
+          {run => 'git checkout origin master'},
           {run => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
           {run => 'git push origin master'};
       for my $repo (@$needs) {
@@ -1218,8 +1220,10 @@ $Options->{'circleci', 'merger'} = {
     }
     for my $branch (qw(staging nightly)) {
       push @{$json->{_deploy_jobs}->{$branch} ||= []}, join "\n",
-          'git rev-parse HEAD > head.txt',
-          'curl -f -s -S --request POST --header "Authorization:token $GITHUB_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"base\":\"'.$into.'\",\"head\":\"`cat head.txt`\",\"commit_message\":\"auto-merge $CIRCLE_BRANCH into '.$into.'\"}" "https://api.github.com/repos/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/merges"',
+          "git fetch --unshallow origin $into",
+          "git checkout origin $into",
+          q{git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into }.$into.q{" $CIRCLE_SHA1},
+          "git push origin $into",
           'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash';
     } # $branch
   },
