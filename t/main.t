@@ -1194,14 +1194,14 @@ for (
       machine => $machine,
       steps => [
         'checkout',
-        {deploy => {command => "git fetch --unshallow origin master\x0Agit checkout origin master\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into master" $CIRCLE_SHA1'."\x0Agit push origin master\x0A" .
+        {deploy => {command => "git fetch --unshallow origin master || git fetch origin master\x0Agit checkout origin master\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into master" $CIRCLE_SHA1'."\x0Agit push origin master\x0A" .
                         'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }, deploy_nightly => {
       machine => $machine,
       steps => [
         'checkout',
-        {deploy => {command => "git fetch --unshallow origin master\x0Agit checkout origin master\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into master" $CIRCLE_SHA1'."\x0Agit push origin master\x0A" .
+        {deploy => {command => "git fetch --unshallow origin master || git fetch origin master\x0Agit checkout origin master\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into master" $CIRCLE_SHA1'."\x0Agit push origin master\x0A" .
                         'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }},
@@ -1229,14 +1229,14 @@ for (
       machine => $machine,
       steps => [
         'checkout',
-        {deploy => {command => "git fetch --unshallow origin dev\x0Agit checkout origin dev\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into dev" $CIRCLE_SHA1'."\x0Agit push origin dev\x0A" .
+        {deploy => {command => "git fetch --unshallow origin dev || git fetch origin dev\x0Agit checkout origin dev\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into dev" $CIRCLE_SHA1'."\x0Agit push origin dev\x0A" .
                         'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }, deploy_nightly => {
       machine => $machine,
       steps => [
         'checkout',
-        {deploy => {command => "git fetch --unshallow origin dev\x0Agit checkout origin dev\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into dev" $CIRCLE_SHA1'."\x0Agit push origin dev\x0A" .
+        {deploy => {command => "git fetch --unshallow origin dev || git fetch origin dev\x0Agit checkout origin dev\x0A".'git merge -m "auto-merge $CIRCLE_BRANCH ($CIRCLE_SHA1) into dev" $CIRCLE_SHA1'."\x0Agit push origin dev\x0A" .
                         'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.$CIRCLE_BRANCH BWALL_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME bash'}},
       ],
     }},
@@ -2012,7 +2012,7 @@ for (
         },
         {"run" => 'git config --global user.name "GitHub Actions"'},
         {"run" => 'git config --global user.email "temp@github.test"'},
-        {run => 'git fetch --unshallow origin master'},
+        {run => 'git fetch --unshallow origin master || git fetch origin master'},
         {run => 'git checkout origin master'},
         {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
         {run => 'git push origin master'},
@@ -2033,7 +2033,7 @@ for (
         },
         {"run" => 'git config --global user.name "GitHub Actions"'},
         {"run" => 'git config --global user.email "temp@github.test"'},
-        {run => 'git fetch --unshallow origin master'},
+        {run => 'git fetch --unshallow origin master || git fetch origin master'},
         {run => 'git checkout origin master'},
         {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
         {run => 'git push origin master'},
@@ -2059,7 +2059,7 @@ for (
         },
         {"run" => 'git config --global user.name "GitHub Actions"'},
         {"run" => 'git config --global user.email "temp@github.test"'},
-        {run => 'git fetch --unshallow origin master'},
+        {run => 'git fetch --unshallow origin master || git fetch origin master'},
         {run => 'git checkout origin master'},
         {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
         {run => 'git push origin master'},
@@ -2082,7 +2082,7 @@ for (
         },
         {"run" => 'git config --global user.name "GitHub Actions"'},
         {"run" => 'git config --global user.email "temp@github.test"'},
-        {run => 'git fetch --unshallow origin master'},
+        {run => 'git fetch --unshallow origin master || git fetch origin master'},
         {run => 'git checkout origin master'},
         {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
         {run => 'git push origin master'},
@@ -2131,7 +2131,7 @@ for (
         },
         {"run" => 'git config --global user.name "GitHub Actions"'},
         {"run" => 'git config --global user.email "temp@github.test"'},
-        {run => 'git fetch --unshallow origin master'},
+        {run => 'git fetch --unshallow origin master || git fetch origin master'},
         {run => 'git checkout origin master'},
         {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
         {run => 'git push origin master'},
@@ -2153,7 +2153,7 @@ for (
         },
         {"run" => 'git config --global user.name "GitHub Actions"'},
         {"run" => 'git config --global user.email "temp@github.test"'},
-        {run => 'git fetch --unshallow origin master'},
+        {run => 'git fetch --unshallow origin master || git fetch origin master'},
         {run => 'git checkout origin master'},
         {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
         {run => 'git push origin master'},
