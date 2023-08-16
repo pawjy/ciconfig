@@ -2977,6 +2977,93 @@ for (
       },
     },
   }}}, 'github pages with branch and tests'],
+  [{github => {pages => {
+    after => 1,
+  }}} => {'.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      push => {
+        branches => ['master'],
+      },
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
+          {run => 'make build-github-pages'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v1',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@main'},
+          {run => 'make deployed-github-pages'},
+        ],
+      },
+    },
+  }}}, 'github pages with after'],
+  [{github => {pages => {
+    after => 1,
+    after_secrets => ['ab', 'X'],
+  }}} => {'.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      push => {
+        branches => ['master'],
+      },
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
+          {run => 'make build-github-pages'},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v1',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@main'},
+          {run => 'make deployed-github-pages',
+           env => {ab => '${{ secrets.ab }}',
+                   X => '${{ secrets.X }}'}},
+        ],
+      },
+    },
+  }}}, 'github pages with after_secrets'],
   [{github => {
     build => [{docker_build => 'foo.test/bar/z123'}],
     tests => ['x'],

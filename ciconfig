@@ -3190,6 +3190,11 @@ my $Platforms = {
              with => {path => '.'}},
             {name => 'Deploy', id => 'deployment',
              uses => 'actions/deploy-pages@main'};
+        if ($pp->{after}) {
+          push @{$job->{steps}},
+              github_step {run => 'make deployed-github-pages',
+                           secrets => $pp->{after_secrets}};
+        }
       }
 
       return $output;
