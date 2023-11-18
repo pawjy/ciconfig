@@ -12,7 +12,7 @@ my $circleci_version = "2.1";
 
 for (
   [{} => {}],
-  [{"#abc"} => {}],
+  [{"#abc" => 1} => {}],
 
   [{meta => {}} => {}, 'meta empty'],
 
@@ -2201,7 +2201,7 @@ for (
          env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
       ],
     }},
-  }}}, 'needupdate autobuild'],
+  }}, '.github/.touch' => {touch => 1}}, 'needupdate autobuild'],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
     on => {schedule => [{cron => '23 19 * * *'}]},
@@ -2225,7 +2225,7 @@ for (
         {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
       ],
     }},
-  }}}, 'gaa'],
+  }}, '.github/.touch' => {touch => 1}}, 'gaa'],
   [{config => {
     default_branch => 'fuga',
   }, github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
@@ -2251,7 +2251,7 @@ for (
         {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
       ],
     }},
-  }}}, 'gaa with default_branch'],
+  }}, '.github/.touch' => {touch => 1}}, 'gaa with default_branch'],
   [{github => {gaa => {
     build => ['foo', 'a b ${{ a.b }}'],
   }}} => {'.github/workflows/cron.yml' => {json => {
@@ -2278,7 +2278,7 @@ for (
         {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
       ],
     }},
-  }}}, 'gaa with build steps'],
+  }}, '.github/.touch' => {touch => 1}}, 'gaa with build steps'],
   [{github => {
     build => ['b'], tests => ['a'], autobuild => 1,
   }} => {'.github/workflows/test.yml' => {json => {
@@ -2299,7 +2299,7 @@ for (
          with => {path => '/tmp/circle-artifacts/test'}},
       ],
     }},
-  }}}, 'github autobuild'],
+  }}, '.github/.touch' => {touch => 1}}, 'github autobuild'],
   [{github => {updatebyhook => 1}} => {'.github/workflows/hook.yml' => {json => {
     name => 'hook',
     on => {repository_dispatch => {types => ['needupdate']}},
@@ -5574,6 +5574,7 @@ for (
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
+          .github/.touch
           .github/workflows/test.yml
           .github/workflows/hook.yml
           .github/workflows/pages.yml

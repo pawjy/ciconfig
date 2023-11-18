@@ -31,6 +31,12 @@ for my $name (sort { $a cmp $b } keys %$output) {
     if ($RunGit) {
       system 'git', 'add', $path;
     }
+  } elsif ($data->{touch}) {
+    $path->parent->mkpath;
+    $path->spew (int (time / (50*24*60*60)));
+    if ($RunGit) {
+      system 'git', 'add', $path;
+    }
   } elsif ($data->{remove}) {
     if ($path->is_file) {
       if ($Remove) {

@@ -452,6 +452,7 @@ my $Platforms = {
     to_json_files => sub {
       my $input = shift;
       my $output = {};
+      my $has_cron = 0;
 
       ## <https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions>
 
@@ -596,6 +597,7 @@ my $Platforms = {
         my $json = $output->{'.github/workflows/test.yml'} or die "No |tests| or deploy";
         my ($hour, $minute) = random_hm $input, 'github.autobuild';
         $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
+        $has_cron = 1;
       }
 
       for my $branch_name (keys %{$input->{_branch_github_batch_jobs} or {}}) {
@@ -604,6 +606,7 @@ my $Platforms = {
         $json->{name} = 'cron';
         my ($hour, $minute) = random_hm $input, 'github.cron.' . $branch_name;
         $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
+        $has_cron = 1;
 
         my $job = $json->{jobs}->{'batch_github_' . $branch_name} = {
           if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
@@ -692,6 +695,10 @@ my $Platforms = {
         }
       }
 
+      if ($has_cron) {
+        $output->{'.github/.touch'} = {touch => 1};
+      }
+
       return $output;
     },
     possible_files => [
@@ -699,6 +706,7 @@ my $Platforms = {
       '.github/workflows/hook.yml',
       '.github/workflows/cron.yml',
       '.github/workflows/pages.yml',
+      '.github/.touch',
     ],
   },
   droneci => {
@@ -1792,7 +1800,11 @@ sub generate ($$$;%) {
     if (defined $p_def->{to_json_files}) {
       my $files = $p_def->{to_json_files}->($json);
       for my $file_name (keys %$files) {
-        $data->{$file_name} = {json => $files->{$file_name}};
+        if ($files->{$file_name}->{touch}) {
+          $data->{$file_name} = $files->{$file_name};
+        } else {
+          $data->{$file_name} = {json => $files->{$file_name}};
+        }
       }
     } else {
       if (defined $p_def->{file}) {
