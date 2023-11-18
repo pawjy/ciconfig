@@ -3087,6 +3087,29 @@ for (
     }},
   }}}, 'github docker_build'],
   [{github => {
+    build => [{docker_build => 'foo.test/bar/z123',
+               path => "foo/bar"}],
+    tests => ['x'],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'docker build -t foo\\.test\\/bar\\/z123 foo\\/bar'},
+        {run => 'x'},
+        {uses => 'actions/upload-artifact@v3',
+         with => {path => '/tmp/circle-artifacts/test'}},
+      ],
+    }},
+  }}}, 'github docker_build with path'],
+  [{github => {
     tests => ['x', {docker_push => 'foo.test/bar/z123'}],
   }} => {'.github/workflows/test.yml' => {json => {
     name => 'test',

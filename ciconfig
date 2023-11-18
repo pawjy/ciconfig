@@ -2596,7 +2596,7 @@ sub github_step ($) {
     my $branch_name = $input->{branch};
     if ($input->{docker_build}) {
       my $name = $input->{docker_build};
-      my $path = '.';
+      my $path = $input->{path} // '.';
       $output[0]->{run} = 'docker build -t ' . (quotemeta $name) . ' ' . (quotemeta $path);
     } elsif ($input->{docker_push}) {
       my $name = $input->{docker_push};
