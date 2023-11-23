@@ -2907,7 +2907,15 @@ sub github_step ($) {
 
     if (defined $branch_name) {
       for my $output (@output) {
-        $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
+        if (defined $output->{if}) {
+          if ($output->{if} =~ m{^\$\{\{\s*(.+?)\s*\}\}$}) {
+            $output->{if} = sprintf q{${{ (%s) && github.ref == 'refs/heads/%s' }}}, $1, $branch_name;
+          } else {
+            die "Bad |if|: |$output->{if}|";
+          }
+        } else {
+          $output->{if} = q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}];
+        }
       }
     }
   } else {
@@ -3281,7 +3289,8 @@ my $Platforms = {
           ## <https://github.com/actions/upload-artifact>
           push @{$job->{steps}},
               {uses => 'actions/upload-artifact@v3',
-               with => {path => $artifacts_path}};
+               with => {path => $artifacts_path},
+               if => '${{ always () }}'};
         } # artifacts
         
         unshift @{$job->{steps}},
