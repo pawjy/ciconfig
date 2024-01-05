@@ -3480,10 +3480,10 @@ my $Platforms = {
         push @{$job->{steps}},
             {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
             {name => 'Upload artifact',
-             uses => 'actions/upload-pages-artifact@v1',
+             uses => 'actions/upload-pages-artifact@v2',
              with => {path => '.'}},
             {name => 'Deploy', id => 'deployment',
-             uses => 'actions/deploy-pages@main'};
+             uses => 'actions/deploy-pages@v3'};
         if ($pp->{after}) {
           push @{$job->{steps}},
               github_step {run => 'make deployed-github-pages',
@@ -4627,7 +4627,7 @@ sub generate ($$$;%) {
 
 =head1 LICENSE
 
-Copyright 2018-2023 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2024 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
