@@ -2874,6 +2874,49 @@ for (
       },
     },
   }}}, 'github pages with branch'],
+  [{github => {pages => {
+    build_secrets => ['ab', 'c'],
+  }}} => {'.github/workflows/pages.yml' => {json => {
+    name => 'pages',
+    on => {
+      push => {
+        branches => ['master'],
+      },
+    },
+    permissions => {
+      contents => 'read',
+      pages => 'write',
+      'id-token' => 'write',
+    },
+    concurrency => {
+      group => 'pages',
+      'cancel-in-progress' => \1,
+    },
+    jobs => {
+      deploy => {
+        environment => {
+          name => 'github-pages',
+          url => '${{ steps.deployment.outputs.page_url }}',
+        },
+        'runs-on' => 'ubuntu-latest',
+        steps => [
+          {name => 'Checkout', uses => 'actions/checkout@v2',
+           "with" => {
+             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+           }},
+          {run => 'make build-github-pages',
+           env => {ab => '${{ secrets.ab }}',
+                   c => '${{ secrets.c }}'}},
+          {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
+          {name => 'Upload artifact',
+           uses => 'actions/upload-pages-artifact@v2',
+           with => {path => '.'}},
+          {name => 'Deploy', id => 'deployment',
+           uses => 'actions/deploy-pages@v3'},
+        ],
+      },
+    },
+  }}}, 'github pages with build secrets'],
   [{github => {pages => 1,
                tests => ['a']}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',

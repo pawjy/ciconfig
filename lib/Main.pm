@@ -689,7 +689,8 @@ my $Platforms = {
                "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
              }};
         push @{$job->{steps}},
-            github_step 'make build-github-pages';
+            github_step {run => 'make build-github-pages',
+                         secrets => $pp->{build_secrets}};
         push @{$job->{steps}},
             {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
             {name => 'Upload artifact',
