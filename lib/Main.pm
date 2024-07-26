@@ -733,6 +733,7 @@ my $Platforms = {
       $json->{workspace}->{path} = '/drone/src';
 
       my $volumes = [];
+      my $x_volume_names = {};
       my $init_commands = [];
       my $terminate_commands = [];
       my $step_names = {build => ['build']};
@@ -855,9 +856,19 @@ my $Platforms = {
             push @{$fstep->{commands}},
                 map { map { droneci_step $_ } $_->($step->{name}) } @$terminate_commands;
           }
-          
-          push @{$step->{volumes} ||= []}, @$volumes if @$volumes;
-          push @{$fstep->{volumes} ||= []}, @$volumes if @$volumes;
+
+          my $xvols = [];
+          if (defined $rule->{volumes} and ref $rule->{volumes} eq 'ARRAY') {
+            for (@{$rule->{volumes}}) {
+              push @$xvols, {name => $_, path => $_};
+              $x_volume_names->{$_} = 1;
+            }
+          }
+
+          if (@$volumes or @$xvols) {
+            push @{$step->{volumes} ||= []}, @$volumes, @$xvols;
+            push @{$fstep->{volumes} ||= []}, @$volumes, @$xvols;
+          }
         } # $rule
         return $other_rules;
       }; # $insert_step
@@ -1072,6 +1083,13 @@ my $Platforms = {
                                  prev_phases => [qw(build test deploy failed
                                                     cleanup1 cleanup2)]);
         die if @$crules;
+      }
+
+      for (sort { $a cmp $b } keys %$x_volume_names) {
+        push @{$json->{volumes} ||= []}, {
+          name => $_,
+          host => {path => $_},
+        };
       }
     }, # set
   },
