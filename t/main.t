@@ -5662,6 +5662,44 @@ for (
       when => {status => ['failure']},
     }],
   }}}, 'droneci merger'],
+  [{droneci => {cleanup => {hoge => {commands => [
+    "foo bar",
+    "baz"
+  ], volumes => ["/a/b", "/a/c"]}}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [],
+      when => {branch => []},
+    }, {
+      name => 'cleanup--hoge',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "foo bar",
+        "baz"
+      ],
+      when => {
+        status => ['failure', 'success'],
+        branch => [],
+      },
+      volumes => [{
+        name => "/a/b", path => "/a/b",
+      }, {
+        name => "/a/c", path => "/a/c",
+      }],
+      failure => 'ignore',
+      depends_on => [qw(build)],
+    }],
+    volumes => [{
+      name => "/a/b", host => {path => "/a/b"},
+    }, {
+      name => "/a/c", host => {path => "/a/c"},
+    }],
+  }}}, 'droneci docker volumes'],
 ) {
   my ($input, $expected, $name) = @$_;
   for (qw(.travis.yml circle.yml .circleci/config.yml .drone.yml
