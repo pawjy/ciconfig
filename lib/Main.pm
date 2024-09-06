@@ -501,7 +501,7 @@ my $Platforms = {
 
           ## <https://github.com/actions/upload-artifact>
           push @{$job->{steps}},
-              {uses => 'actions/upload-artifact@v3',
+              {uses => 'actions/upload-artifact@v4',
                with => {path => $artifacts_path},
                if => '${{ always () }}'};
         } # artifacts
