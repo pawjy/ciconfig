@@ -7,7 +7,7 @@ use Test::More;
 use Main;
 use JSON::PS;
 
-my $machine = {"image" => "ubuntu-2004:202101-01"};
+my $machine = {"image" => "default"};
 my $circleci_version = "2.1";
 
 for (

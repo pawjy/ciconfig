@@ -32,7 +32,8 @@ sub install_awscli_command () {
 sub new_job () {
   return {
     ## <https://github.com/circleci/circleci-docs/blob/master/jekyll/_cci2/configuration-reference.md#available-machine-images>
-    machine => {"image" => "ubuntu-2004:202101-01"},
+    ## <https://discuss.circleci.com/t/linux-image-deprecations-and-eol-for-2024/50177>
+    machine => {"image" => "default"},
     steps => [],
   };
 } # new_job
