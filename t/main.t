@@ -2208,6 +2208,48 @@ for (
       ],
     }},
   }}, '.github/.touch' => {touch => 1}}, 'needupdate autobuild'],
+  [{github => {
+    needupdate => ['master'], autobuild => {per_day => 2},
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}, schedule => [{cron => "7 18,6 * * *"}]},
+    jobs => {deploy_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/master/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}, '.github/.touch' => {touch => 1}}, 'autobuild per_day 2'],
+  [{github => {
+    needupdate => ['master'], autobuild => {per_day => 3},
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}, schedule => [{cron => "7 18,2,10 * * *"}]},
+    jobs => {deploy_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/master/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}, '.github/.touch' => {touch => 1}}, 'autobuild per_day 3'],
+  [{github => {
+    needupdate => ['master'], autobuild => {per_day => 4},
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}, schedule => [{cron => "7 18,0,6,12 * * *"}]},
+    jobs => {deploy_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/master/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}, '.github/.touch' => {touch => 1}}, 'autobuild per_day 4'],
   [{github => {gaa => 1}} => {'.github/workflows/cron.yml' => {json => {
     name => 'cron',
     on => {schedule => [{cron => '23 19 * * *'}]},

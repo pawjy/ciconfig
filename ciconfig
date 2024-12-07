@@ -3400,7 +3400,30 @@ my $Platforms = {
       if ($input->{_autobuild}) {
         my $json = $output->{'.github/workflows/test.yml'} or die "No |tests| or deploy";
         my ($hour, $minute) = random_hm $input, 'github.autobuild';
-        $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
+        if (ref $input->{_autobuild} and ref $input->{_autobuild} eq 'HASH' and
+            $input->{_autobuild}->{per_day} >= 2) {
+          if ($input->{_autobuild}->{per_day} >= 4) {
+            my $hour2 = $hour + 6;
+            my $hour3 = $hour + 12;
+            my $hour4 = $hour + 18;
+            $hour2 %= 24;
+            $hour3 %= 24;
+            $hour4 %= 24;
+            $json->{on}->{schedule} = [{cron => "$minute $hour,$hour2,$hour3,$hour4 * * *"}];
+          } elsif ($input->{_autobuild}->{per_day} >= 3) {
+            my $hour2 = $hour + 8;
+            my $hour3 = $hour + 16;
+            $hour2 %= 24;
+            $hour3 %= 24;
+            $json->{on}->{schedule} = [{cron => "$minute $hour,$hour2,$hour3 * * *"}];
+          } else {
+            my $hour2 = $hour + 12;
+            $hour2 %= 24;
+            $json->{on}->{schedule} = [{cron => "$minute $hour,$hour2 * * *"}];
+          }
+        } else {
+          $json->{on}->{schedule} = [{cron => "$minute $hour * * *"}];
+        }
         $has_cron = 1;
       }
 
@@ -4551,7 +4574,7 @@ $Options->{'github', 'autobuild'} = {
     my $json = $_[0];
     return unless $_[1];
 
-    $json->{_autobuild} = 1;
+    $json->{_autobuild} = $_[1];
   },
 };
 
