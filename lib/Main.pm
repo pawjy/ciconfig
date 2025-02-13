@@ -718,7 +718,7 @@ my $Platforms = {
         push @{$job->{steps}},
             {name => 'Setup pages', uses => 'actions/configure-pages@v3'},
             {name => 'Upload artifact',
-             uses => 'actions/upload-pages-artifact@v4',
+             uses => 'actions/upload-pages-artifact@v3',
              with => {path => '.'}},
             {name => 'Deploy', id => 'deployment',
              uses => 'actions/deploy-pages@v3'};
