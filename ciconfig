@@ -3545,7 +3545,7 @@ my $Platforms = {
              uses => 'actions/upload-pages-artifact@v3',
              with => {path => '.'}},
             {name => 'Deploy', id => 'deployment',
-             uses => 'actions/deploy-pages@v3'};
+             uses => 'actions/deploy-pages@v4'};
         if ($pp->{after}) {
           push @{$job->{steps}},
               github_step {run => 'make deployed-github-pages',
