@@ -3688,7 +3688,7 @@ my $Platforms = {
           }
 
           if ($args{phase} eq 'deploy') {
-            $step->{when}->{event} = ['push', 'promote'];
+            $step->{when}->{event} = ['push', 'custom'];
           }
 
           push @{$step->{commands}},
