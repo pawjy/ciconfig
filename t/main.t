@@ -3575,7 +3575,7 @@ for (
         "c",
       ],
       depends_on => [qw(build test--a)],
-      when => {branch => ['master'], event => ['push', 'promote']},
+      when => {branch => ['master'], event => ['push', 'custom']},
     }, {
       name => 'test--b',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5032,7 +5032,7 @@ for (
         "baz",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['master'], event => ['push', 'promote']},
+      when => {branch => ['master'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5082,7 +5082,7 @@ for (
         "baz",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['ab'], event => ['push', 'promote']},
+      when => {branch => ['ab'], event => ['push', 'custom']},
     }, {
       name => 'deploy--b',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5090,7 +5090,7 @@ for (
         "x",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['c', 'xb', 'yb'], event => ['push', 'promote']},
+      when => {branch => ['c', 'xb', 'yb'], event => ['push', 'custom']},
     }],
   }}}, 'droneci deploy branches'],
   [{droneci => {tests => [
@@ -5131,7 +5131,7 @@ for (
         "foo bar",
       ],
       depends_on => [],
-      when => {branch => ['master'], event => ['push', 'promote']},
+      when => {branch => ['master'], event => ['push', 'custom']},
     }, {
       name => 'deploy--c',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5139,7 +5139,7 @@ for (
         "baz",
       ],
       depends_on => [qw(build)],
-      when => {branch => ['master'], event => ['push', 'promote']},
+      when => {branch => ['master'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5185,7 +5185,7 @@ for (
         "make deploy-a",
       ],
       depends_on => ['build', 'test--default'],
-      when => {branch => ['a'], event => ['push', 'promote']},
+      when => {branch => ['a'], event => ['push', 'custom']},
     }, {
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5193,7 +5193,7 @@ for (
         "make deploy-bb",
       ],
       depends_on => [qw(build test--default)],
-      when => {branch => ['bb'], event => ['push', 'promote']},
+      when => {branch => ['bb'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5241,7 +5241,7 @@ for (
         "make deploy-a",
       ],
       depends_on => [],
-      when => {branch => ['a'], event => ['push', 'promote']},
+      when => {branch => ['a'], event => ['push', 'custom']},
     }, {
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5249,7 +5249,7 @@ for (
         "make deploy-bb",
       ],
       depends_on => ['build'],
-      when => {branch => ['bb'], event => ['push', 'promote']},
+      when => {branch => ['bb'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5297,7 +5297,7 @@ for (
         "make deploy-a",
       ],
       depends_on => [],
-      when => {branch => ['a'], event => ['push', 'promote']},
+      when => {branch => ['a'], event => ['push', 'custom']},
     }, {
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5308,7 +5308,7 @@ for (
         "make deploy-bb",
       ],
       depends_on => ['build'],
-      when => {branch => ['bb'], event => ['push', 'promote']},
+      when => {branch => ['bb'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5361,7 +5361,7 @@ for (
         'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
       ],
       depends_on => ['build', 'test--default'],
-      when => {branch => ['bb'], event => ['push', 'promote']},
+      when => {branch => ['bb'], event => ['push', 'custom']},
     }],
   }}}, 'droneci make_deploy_branches nested'],
   [{droneci => {tests => [
@@ -5404,7 +5404,7 @@ for (
         'docker exec -t -e A=$A `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb',
       ],
       depends_on => ['build', 'test--default'],
-      when => {branch => ['bb'], event => ['push', 'promote']},
+      when => {branch => ['bb'], event => ['push', 'custom']},
     }],
   }}}, 'droneci make_deploy_branches secrets'],
   [{droneci => {tests => [
@@ -5616,7 +5616,7 @@ for (
         GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
       },
       depends_on => ['build', 'test--default'],
-      when => {branch => ['nightly'], event => ['push', 'promote']},
+      when => {branch => ['nightly'], event => ['push', 'custom']},
     }, {
       name => 'deploy-merger--staging',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5628,7 +5628,7 @@ for (
         GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
       },
       depends_on => [qw(build test--default)],
-      when => {branch => ['staging'], event => ['push', 'promote']},
+      when => {branch => ['staging'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5679,7 +5679,7 @@ for (
         GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
       },
       depends_on => ['build', 'test--default'],
-      when => {branch => ['nightly'], event => ['push', 'promote']},
+      when => {branch => ['nightly'], event => ['push', 'custom']},
     }, {
       name => 'deploy-merger--staging',
       image => 'quay.io/wakaba/droneci-step-base',
@@ -5691,7 +5691,7 @@ for (
         GH_ACCESS_TOKEN => {from_secret => 'GH_ACCESS_TOKEN'},
       },
       depends_on => [qw(build test--default)],
-      when => {branch => ['staging'], event => ['push', 'promote']},
+      when => {branch => ['staging'], event => ['push', 'custom']},
     }, {
       name => 'failed--a',
       image => 'quay.io/wakaba/droneci-step-base',
