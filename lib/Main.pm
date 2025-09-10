@@ -193,7 +193,7 @@ sub droneci_step ($) {
       my @cmd = ('docker exec -t');
       if (ref $input->{nested}) {
         for my $name (sort { $a cmp $b } @{$input->{nested}->{envs}}) {
-          push @cmd, '-e ' . $name . q{=$} . $name;
+          push @cmd, '-e ' . $name . q{='$} . $name . q{'};
         }
       }
       push @cmd, q(`cat /drone/src/local/ciconfig/dockername`), $cmd;
