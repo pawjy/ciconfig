@@ -3915,8 +3915,8 @@ for (
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
-        q{docker exec -t -e AB='$AB' -e X\\Y='$X\\Y' `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b},
-        q{docker exec -t -e AB='$AB' -e X\\Y='$X\\Y' `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b &},
+        q{docker exec -t -e AB="$AB" -e X\\Y="$X\\Y" `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b},
+        q{docker exec -t -e AB="$AB" -e X\\Y="$X\\Y" `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b &},
       ],
       depends_on => [qw(build)],
     }, {
@@ -4031,8 +4031,8 @@ for (
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ a\\\\b',
         'docker exec -t `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b',
-        q{docker exec -t -e AB='$AB' -e X\\Y='$X\\Y' `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b},
-        q{docker exec -t -e AB='$AB' -e X\\Y='$X\\Y' `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b &},
+        q{docker exec -t -e AB="$AB" -e X\\Y="$X\\Y" `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b},
+        q{docker exec -t -e AB="$AB" -e X\\Y="$X\\Y" `cat /drone/src/local/ciconfig/dockername` timeout 3 bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\\ \\&\\&\\ cd\\ c\\\\\\\\d\\ \\&\\&\\ a\\\\b &},
       ],
       depends_on => [qw(build)],
     }, {
@@ -5353,12 +5353,12 @@ for (
       name => 'deploy-make--bb',
       image => 'quay.io/wakaba/droneci-step-base',
       commands => [
-        q{docker exec -t -e A='$A' `cat /drone/src/local/ciconfig/dockername` bash -c } . quotemeta (
+        q{docker exec -t -e A="$A" `cat /drone/src/local/ciconfig/dockername` bash -c } . quotemeta (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
                  "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version"
                 ),
-        q{docker exec -t -e A='$A' `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb},
+        q{docker exec -t -e A="$A" `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb},
       ],
       depends_on => ['build', 'test--default'],
       when => {branch => ['bb'], event => ['push', 'custom']},
@@ -5401,7 +5401,7 @@ for (
         Y => {from_secret => 'Y'},
       },
       commands => [
-        q{docker exec -t -e A='$A' `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb},
+        q{docker exec -t -e A="$A" `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb},
       ],
       depends_on => ['build', 'test--default'],
       when => {branch => ['bb'], event => ['push', 'custom']},
