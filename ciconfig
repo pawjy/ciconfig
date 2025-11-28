@@ -2917,7 +2917,11 @@ sub github_step ($) {
     if ($input->{docker_build}) {
       my $name = $input->{docker_build};
       my $path = $input->{path} // '.';
-      $output[0]->{run} = 'docker build -t ' . (quotemeta $name) . ' ' . (quotemeta $path);
+      my $command = $input->{command} // 'docker build';
+      $output[0]->{run} = $command . ' -t ' . (quotemeta $name) . ' ' . (quotemeta $path);
+      for my $name (@{$input->{secrets} or []}) {
+        $output[0]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
+      }
     } elsif ($input->{docker_push}) {
       my $name = $input->{docker_push};
       if ($name =~ m{^([^/]+)/([^/]+)/([^/]+)$}) {

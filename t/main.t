@@ -3218,6 +3218,57 @@ for (
     }},
   }}}, 'github docker_build with path'],
   [{github => {
+    build => [{docker_build => 'foo.test/bar/z123',
+               command => "fo/o b\\ar"}],
+    tests => ['x'],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'fo/o b\\ar -t foo\\.test\\/bar\\/z123 \\.'},
+        {run => 'x'},
+        {uses => 'actions/upload-artifact@v4',
+         with => {path => '/tmp/circle-artifacts/test'},
+         if => '${{ always () }}'},
+      ],
+    }},
+  }}}, 'github docker_build with command'],
+  [{github => {
+    build => [{docker_build => 'foo.test/bar/z123',
+               secrets => ['a/b', 'b\\c']}],
+    tests => ['x'],
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      env => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'docker build -t foo\\.test\\/bar\\/z123 \\.', env => {
+          "a/b" => '${{ secrets.a/b }}',
+          "b\\c" => '${{ secrets.b\\c }}',
+        }},
+        {run => 'x'},
+        {uses => 'actions/upload-artifact@v4',
+         with => {path => '/tmp/circle-artifacts/test'},
+         if => '${{ always () }}'},
+      ],
+    }},
+  }}}, 'github docker_build with secrets'],
+  [{github => {
     tests => ['x', {docker_push => 'foo.test/bar/z123'}],
   }} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
