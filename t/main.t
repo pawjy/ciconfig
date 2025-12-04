@@ -1020,7 +1020,7 @@ for (
         {"attach_workspace" => {"at" => "./"}},
         {deploy => {command =>
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version"
                }},
         {deploy => {command => 'make deploy-master'}},
@@ -1032,7 +1032,7 @@ for (
         {"attach_workspace" => {"at" => "./"}},
         {deploy => {command =>
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version"
                }},
         {deploy => {command => 'make deploy-devel'}},
@@ -1260,7 +1260,7 @@ for (
         {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
         {run => {command =>
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version"
                }},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
@@ -1281,7 +1281,7 @@ for (
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
         {deploy => {command => "if [ \"\${CIRCLE_BRANCH}\" == 'x' ]; then\ntrue\n" .
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version"
                  . "\nfi"}},
       ],
@@ -4468,7 +4468,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
@@ -4483,7 +4483,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
@@ -4502,7 +4502,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
@@ -4557,7 +4557,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
@@ -4572,7 +4572,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
         "y",
@@ -4592,7 +4592,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "y",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--a/>"',
@@ -4648,7 +4648,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
@@ -4663,7 +4663,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
         "y",
@@ -4683,7 +4683,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--a',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
         "y",
@@ -4736,7 +4736,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         
         "x",
@@ -4753,7 +4753,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
@@ -4800,7 +4800,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
@@ -4816,7 +4816,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
@@ -4835,7 +4835,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "foo bar",
         "baz",
@@ -4874,7 +4874,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"; sleep 30; done &},
         "x",
@@ -4891,7 +4891,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"; sleep 30; done &},
         "aaa",
@@ -4911,7 +4911,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         q{while [ true ]; do aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default > /dev/null && echo '\\n'"Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/>"; sleep 30; done &},
         "foo bar",
@@ -4959,7 +4959,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
         q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash},
@@ -4991,7 +4991,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         'a',
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
@@ -5354,7 +5354,7 @@ for (
       image => 'quay.io/wakaba/droneci-step-base',
       commands => [
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "make deploy-bb",
       ],
@@ -5406,7 +5406,7 @@ for (
       commands => [
         q{docker exec -t -e A="$A" `cat /drone/src/local/ciconfig/dockername` bash -c } . quotemeta (
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version"
                 ),
         q{docker exec -t -e A="$A" `cat /drone/src/local/ciconfig/dockername` bash -c cd\ `cat /drone/src/local/ciconfig/dockershareddir`\ \&\&\ cd\ foop\ \&\&\ make\ deploy\-bb},
@@ -5549,7 +5549,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
@@ -5564,7 +5564,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "aaa",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/>"',
@@ -5583,7 +5583,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         "x",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/>"',
@@ -5604,7 +5604,7 @@ for (
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/failed-notification',
         'mkdir -p $CIRCLE_ARTIFACTS',
         "(((sudo apt-cache search python-dev | grep ^python-dev) || sudo apt-get update) && (sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || (sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));\n".
-                 "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
+                 "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         q{curl -f -d message=Test\\ failed\\:\\ $DRONE_COMMIT_BRANCH\\ \\<$DRONE_BUILD_LINK\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/test--default/\\>'\\n'\<x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed--default/\\> -d channel=\#foo https\\:\\/\\/foo\\.test\\/notice},
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed-notification && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/failed-notification/>"',
