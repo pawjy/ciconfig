@@ -25,7 +25,7 @@ sub install_awscli_command () {
            "sudo apt-get update) && ".
          "(sudo apt-get install -y pip || sudo apt-get install -y python-dev)) || ".
         "(sudo apt-get update && (sudo apt-get install -y pip || sudo apt-get install -y python-dev));",
-        "sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;",
+        "sudo pip3 install awscli --upgrade --externally-managed-environment || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;",
         "aws --version";
 } # install_awscli_command
 
