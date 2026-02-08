@@ -1796,6 +1796,7 @@ $Options->{'github', 'updatebyhook'} = {
         "make updatebyhook",
         "git diff-index --quiet HEAD --cached || git commit -m updatebyhook",
         "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
+        'curl -sSf ${{ secrets.BWALLER_URL }} | BWALL_GROUP=merger.${GITHUB_REF/refs\\/heads\\//} BWALL_NAME=hook.${GITHUB_REPOSITORY} bash',
         ;
   },
 };
