@@ -1766,8 +1766,10 @@ $Options->{'github', 'gaa'} = {
     my $json = $_[0];
     return unless $_[1];
     my $build = ['make deps'];
+    my $deploy = [];
     if (ref $_[1] eq 'HASH') {
-      $build = $_[1]->{build};
+      $build = $_[1]->{build} || [];
+      $deploy = $_[1]->{deploy} || [];
     }
     my $branch = $json->{_config}->{default_branch} || 'master';
     push @{$json->{_branch_github_batch_jobs}->{$branch} ||= []},
@@ -1775,6 +1777,7 @@ $Options->{'github', 'gaa'} = {
         "make updatenightly",
         "git diff-index --quiet HEAD --cached || git commit -m auto",
         "git push origin +`git rev-parse HEAD`:refs/heads/nightly",
+        @$deploy,
         ;
   },
 };
@@ -1888,7 +1891,7 @@ sub generate ($$$;%) {
 
 =head1 LICENSE
 
-Copyright 2018-2024 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2026 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

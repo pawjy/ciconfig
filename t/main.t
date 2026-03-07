@@ -2327,6 +2327,36 @@ for (
       ],
     }},
   }}, '.github/.touch' => {touch => 1}}, 'gaa with build steps'],
+  [{github => {gaa => {
+    build => ['foo', 'a b ${{ a.b }}'],
+    deploy => ['bar', 'a b ${{ a.b }}'],
+  }}} => {'.github/workflows/cron.yml' => {json => {
+    name => 'cron',
+    on => {schedule => [{cron => '13 22 * * *'}]},
+    jobs => {batch_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'ubuntu-latest',
+      steps => [
+        {
+          "uses" => 'actions/checkout@v2',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {run => 'foo'},
+        {run => 'a b ${{ a.b }}'},
+        {run => 'make updatenightly'},
+        {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
+        {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
+        {run => 'bar'},
+        {run => 'a b ${{ a.b }}'},
+      ],
+    }},
+  }}, '.github/.touch' => {touch => 1}}, 'gaa with build and deploy steps'],
   [{github => {
     build => ['b'], tests => ['a'], autobuild => 1,
   }} => {'.github/workflows/test.yml' => {json => {
@@ -5821,7 +5851,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2018-2024 Wakaba <wakaba@suikawiki.org>.
+Copyright 2018-2026 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
