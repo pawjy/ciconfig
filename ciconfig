@@ -2804,7 +2804,8 @@ sub file2perl ($) {
 
 1;
 
-=head1 LICENSE
+=pod
+#=head1 LICENSE
 
 Copyright 2014-2019 Wakaba <wakaba@suikawiki.org>.
 
@@ -4713,7 +4714,8 @@ sub generate ($$$;%) {
 
 1;
 
-=head1 LICENSE
+=pod
+#=head1 LICENSE
 
 Copyright 2018-2026 Wakaba <wakaba@suikawiki.org>.
 
@@ -4773,9 +4775,321 @@ for my $name (sort { $a cmp $b } keys %$output) {
   }
 }
 
-=head1 LICENSE
+=pod
+#=head1 LICENSE
 
 Copyright 2018-2023 Wakaba <wakaba@suikawiki.org>.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
+
+
+=head1 NAME
+
+ciconfig - Generate CI/CD configuration files from a centralized JSON file
+
+=head1 SYNOPSIS
+
+B<ciconfig>
+
+B<REMOVE_UNUSED=1 ciconfig>
+
+B<RUN_GIT=1 REMOVE_UNUSED=1 ciconfig>
+
+=head1 DESCRIPTION
+
+B<ciconfig> is a command-line tool for generating configuration files for multiple CI/CD platforms from a single JSON file, F<config/ci.json>.
+
+It supports GitHub Actions, CircleCI, Drone CI, and Travis CI (deprecated), allowing you to manage your project's CI/CD settings in a declarative and centralized manner.
+
+=head1 JSON FILE SYNTAX
+
+The F<config/ci.json> file is a JSON object where keys are platform names (C<github>, C<circleci>, etc.) and an optional C<config> block. The values are objects containing the configuration for that platform.
+
+=head2 Global Configuration
+
+=over 4
+
+=item C<config>
+
+An object for global settings.
+
+=over 8
+
+=item C<default_branch>
+
+Specifies the project's main branch name. The default is C<master>.
+
+=back
+
+=back
+
+=head2 Command Objects
+
+Many options (like C<build>, C<tests>) accept an array of commands. A command can be a simple B<string> (a shell command) or a B<JSON object> for more control.
+
+  "tests": [
+    "make test-all",
+    {
+      "command": "make deploy-staging",
+      "branch": "staging"
+    }
+  ]
+
+Command objects must have a C<command> key. The only other supported key is:
+
+=over 8
+
+=item C<branch>
+
+Restricts the command to run only on the specified branch.
+
+=back
+
+=head1 PLATFORM: GITHUB ACTIONS
+
+Key: C<github>
+
+=head2 Options
+
+=over 4
+
+=item C<pmbp>
+
+Creates a test matrix for multiple Perl versions using L<pmbp|https://github.com/pawjy/perl-setupenv>. The value is a string key to select a version set (e.g., C<"5.14+">, C<"latest">, C<1>).
+
+=item C<macos>
+
+Adds macOS to the test matrix. Can be a boolean or an object, e.g., C<{"latest_perl_only": true}>. If C<latest_perl_only> is true, macOS jobs for older Perl versions are marked as C<experimental> (allowed to fail).
+
+=item C<env_matrix>
+
+An object where keys are environment variable names and values are arrays of strings. This adds new dimensions to the test matrix.
+
+=item C<matrix_allow_failure>
+
+An array of objects specifying combinations in the matrix that are allowed to fail.
+
+=item C<build>, C<tests>
+
+Arrays of commands to run. C<tests> can also be an object to create parallel jobs.
+
+=item C<merger>
+
+On successful builds on C<staging> or C<nightly> branches, merges the branch into a target (default: C<master>). An object can specify C<{"into": "main"}> and C<{"needupdate": ["owner/repo"]}>, which triggers a C<repository_dispatch> event on the specified repositories.
+
+=item C<needupdate>
+
+An array of repository names (C<"owner/repo">) to which a C<needupdate> C<repository_dispatch> event will be sent on pushes to the default branch.
+
+=item C<gaa>
+
+Schedules a job to run C<make updatenightly> and push to the C<nightly> branch. Can be customized with C<{"build": [...]}> and C<{"deploy": [...]}> command arrays.
+
+=item C<autobuild>
+
+Schedules the main test workflow to run periodically. The value can be C<true> (or C<1>) or an object, e.g., C<{"per_day": 2}>.
+
+=item C<updatebyhook>
+
+Creates a workflow triggered by a C<needupdate> C<repository_dispatch> event, which runs C<make updatebyhook>.
+
+=item C<pages>
+
+Configures GitHub Pages deployment. It can be a boolean or an object. If C<tests> are defined, deployment happens only after they succeed.
+
+=over 8
+
+=item C<{"branch": "name"}>: Deploy from this branch (default: C<master>).
+=item C<{"build_secrets": [...]}>: Secrets to expose to the `make build-github-pages` step.
+=item C<{"after": true}>: Runs `make deployed-github-pages` after deployment.
+=item C<{"after_secrets": [...]}>: Secrets for the `after` command.
+
+=back
+
+=item C<docker-build>, C<docker_push>
+
+Used inside a C<build> or C<tests> step array to build or push a Docker image. e.g., C<{"docker_build": "my-image", "path": "./dir", "secrets": ["MY_SECRET"]}> or C<{"docker_push": "my-image", "branch": "main"}>.
+
+=back
+
+=head1 PLATFORM: CIRCLECI
+
+Key: C<circleci>
+
+=head2 Options
+
+=over 4
+
+=item C<build_generated_files>
+
+If this key is present (even with an empty array), it enables a two-stage workflow where a C<build> job runs first, and its results are passed to subsequent C<test> and C<deploy> jobs via a workspace.
+
+=item C<tests>
+
+If C<build_generated_files> is active, C<tests> can be an object to define parallel test jobs.
+
+=item C<deploy>, C<deploy_branch>, C<make_deploy_branches>
+
+Define deployment steps. The behavior changes depending on whether C<build_generated_files> is active. For C<make_deploy_branches>, you can specify options in an object like C<{"name": "devel", "testless": true, "awscli": true}> to control execution order and dependencies.
+
+=item C<heroku>
+
+Provides detailed Heroku deployment configuration, with C<app_name>, C<prepare>, and C<pushed> hooks.
+
+=item C<docker-build>
+
+Builds and pushes Docker images. The push happens in a separate deploy job.
+
+=item C<required_docker_images>
+
+An array of image names to pull at the start of jobs.
+
+=item C<parallel>
+
+A number to set the parallelism for test jobs.
+
+=item C<context>
+
+Adds a context to deploy jobs for secret management.
+
+=item C<tested_branches>
+
+An array of branch names. If specified, workflows will only run on these branches.
+
+=item C<params>
+
+An array of strings that become pipeline parameters, exposed as environment variables.
+
+=item C<gaa>, C<autobuild>
+
+Schedules periodic jobs for auto-applying changes or running the full build/test/deploy workflow.
+
+=item C<awscli>, C<merger>, C<pmbp>, C<empty>
+
+Similar to other platforms but adapted for CircleCI's structure.
+
+=back
+
+=head1 PLATFORM: DRONE CI
+
+Key: C<droneci>
+
+=head2 Options
+
+=over 4
+
+=item C<tests>, C<deploy>, C<failed>, C<cleanup>
+
+Define pipeline steps. Each can be an array of commands or a hash of named jobs. A job can be an object with keys like C<commands>, C<branch>, C<group>, C<optional>, C<failed> (commands on failure), and C<cleanup> (commands that always run).
+
+=item C<docker>
+
+Enables Docker-in-Docker support. An object C<{"nested": true}> creates a more complex setup where steps run inside a dedicated container.
+
+=item C<artifacts>
+
+Configures uploading artifacts to an S3 bucket, with options for C<s3_bucket>, C<s3_prefix>, C<web_prefix>, and C<sync_interval>.
+
+=item C<notification>
+
+Sends notifications on failure. Currently, only C<{"type": "ikachan"}> is supported.
+
+=item C<merger>, C<pmbp>, C<make_deploy_branches>
+
+Similar to other platforms but adapted for Drone CI.
+
+=back
+
+=head1 PLATFORM: TRAVIS CI (DEPRECATED)
+
+Key: C<travisci>
+
+=head2 Options
+
+=over 4
+
+=item C<pmbp>
+
+Creates a test matrix. The C<latest> key for Perl versions results in C<5.32> in the generated config.
+
+=item C<notifications>
+
+If the value is C<"suika">, it configures notifications to a specific email and IRC channel.
+
+=item C<merger>, C<empty>
+
+Similar to other platforms.
+
+=back
+
+=head1 CONFIGURATION EXAMPLE
+
+The following is a practical example for a Perl project on GitHub.
+
+  {
+    "config": {
+      "default_branch": "main"
+    },
+    "github": {
+      "pmbp": "5.14+",
+      "macos": {
+        "latest_perl_only": true
+      },
+      "build": [
+        "make assets"
+      ],
+      "tests": {
+        "unit": [ "make test-unit" ],
+        "integration": [ "make test-integration" ]
+      },
+      "merger": {
+        "into": "main",
+        "needupdate": [ "my-org/another-repo" ]
+      },
+      "pages": {
+        "branch": "main"
+      }
+    }
+  }
+
+This configuration defines a GitHub Actions workflow that:
+=over
+=item * Sets the project's main branch to C<main>.
+=item * Creates a test matrix for Perl 5.14.2 and the latest stable Perl (resolved at runtime by the `perl-setupenv` action).
+=item * Runs tests on both Linux (for all specified Perl versions) and macOS.
+=item * On macOS, conserves resources by running tests only against the `latest` Perl version.
+=item * Runs C<make assets> before any of the test jobs.
+=item * Splits tests into two parallel jobs: C<unit> and C<integration>.
+=item * After a successful test run on a C<staging> or C<nightly> branch, automatically merges it into the C<main> branch and triggers a C<repository_dispatch> event for `my-org/another-repo`.
+=item * Deploys a static site to GitHub Pages whenever a push is made to the C<main> branch.
+=back
+
+=head1 ENVIRONMENT
+
+=over 4
+
+=item B<REMOVE_UNUSED>
+
+If set, configuration files for platforms not in F<config/ci.json> are deleted.
+
+=item B<RUN_GIT>
+
+If set, `git add` and `git rm` are run for generated/deleted files.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba E<lt>wakaba@suikawiki.orgE<gt>
+
+This documentation is generated and maintained by Gemini.
+
+=head1 LICENSE
+
+Copyright 2018-2026 Wakaba <wakaba@suikawiki.org>.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
