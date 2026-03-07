@@ -16,6 +16,10 @@ $script =~ s{use\s+([^\s;]+);\s*#!!EXPAND}{
   $pm =~ s{\n__END__\r?\n.*}{}s;
   "\n\n{\n\n" . $pm . "\n\n}\n$module->import;\n\n";
 }ge;
+$script =~ s{^(=head1)}{=pod
+#$1}mg;
+
+$script .= "\n\n" . path (shift)->slurp;
 
 print $script;
 
