@@ -94,7 +94,7 @@ sub github_step ($) {
       my $name = $input->{docker_build};
       my $path = $input->{path} // '.';
       my $command = $input->{command} // 'docker build';
-      $output[0]->{run} = $command . ' -t ' . (quotemeta $name) . ' ' . (quotemeta $path);
+      $output[0]->{run} = $command . ' --cache-from ' . (quotemeta $name) . ' -t ' . (quotemeta $name) . ' ' . (quotemeta $path);
       for my $name (@{$input->{secrets} or []}) {
         $output[0]->{env}->{$name} = sprintf q<${{ secrets.%s }}>, $name;
       }
@@ -558,7 +558,7 @@ my $Platforms = {
           $extend_matrix->('env_' . $name, $values);
           $json->{jobs}->{test}->{env}->{$name} = '${{ matrix.env_'.$name.' }}';
         }
-        delete $json->{_env_matrix};
+        delete $input->{_env_matrix};
 
         for my $v (@{$input->{_matrix_allow_failure} or []}) {
           for my $m (@$matrix) {
@@ -1398,7 +1398,7 @@ $Options->{'circleci', 'docker-build'} = {
         push @{$_[0]->{_build_generated_images} ||= []}, $name;
       }
       push @{$_[0]->{_build} ||= []},
-          'docker build -t ' . $name . ' ' . $def->{path};
+          'docker build --cache-from ' . $name . ' -t ' . $name . ' ' . $def->{path};
 
       next if $def->{no_push};
       if ($name =~ m{^([^/]+)/([^/]+)/([^/]+)$}) {
