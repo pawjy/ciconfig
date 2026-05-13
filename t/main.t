@@ -3870,6 +3870,19 @@ for (
       host => {path => '/var/lib/docker/shareddir'},
     }],
   }}}, 'droneci docker nested'],
+  [{droneci => {node => {foo => "bar"}}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    node => {foo => "bar"},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [],
+      when => {branch => []},
+    }],
+  }}}, 'droneci node'],
   [{droneci => {docker => 1, tests => [
     "ls",
     {command => "pwd", wd => "/foo"},

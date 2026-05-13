@@ -221,6 +221,10 @@ Enables Docker-in-Docker support. An object C<{"nested": true}> creates a more c
 
 Configures uploading artifacts to an S3 bucket, with options for C<s3_bucket>, C<s3_prefix>, C<web_prefix>, and C<sync_interval>.
 
+=item C<node>
+
+Set the C<node> value.
+
 =item C<notification>
 
 Sends notifications on failure. Currently, only C<{"type": "ikachan"}> is supported.

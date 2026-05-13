@@ -1648,6 +1648,12 @@ $Options->{'droneci', 'artifacts'} = {
   },
 };
 
+$Options->{'droneci', 'node'} = {
+  set => sub {
+    $_[0]->{node} = $_[1];
+  },
+};
+
 $Options->{'droneci', 'docker'} = {
   set => sub {
     return unless $_[1];
