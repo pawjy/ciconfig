@@ -954,7 +954,7 @@ my $Platforms = {
         if ($dd->{with_nested}) {
           push @$bcommands,
               q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash';
+              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash';
 
           push @$cleanup_rules, {name => 'cleanup-nested', commands => []};
           push @{$cleanup_rules->[-1]->{commands}},

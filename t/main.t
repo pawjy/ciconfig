@@ -3837,7 +3837,7 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
       ],
       when => {branch => []},
     }, {
@@ -3983,7 +3983,7 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash}
       ]
     }, {
       name => 'test--default',
@@ -4099,7 +4099,7 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash}
       ]
     }, {
       name => 'test--default',
@@ -4227,7 +4227,7 @@ for (
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash}
       ]
     }, {
       name => 'test--default',
@@ -5006,7 +5006,7 @@ for (
                  "sudo pip3 install awscli --upgrade --break-system-packages || sudo pip install awscli --upgrade || sudo pip3 install awscli --upgrade;\n".
                  "aws --version",
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
         "x",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
