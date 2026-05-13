@@ -30,12 +30,7 @@ sub install_awscli_command () {
 } # install_awscli_command
 
 sub install_proxy_command () {
-  return join "\n",
-      'echo "Acquire::http::Proxy \"$http_proxy\";" > /etc/apt/apt.conf.d/proxy',
-      'echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy',
-      "mkdir -p /root/.config/pip",
-      'echo "[global]" > /root/.config/pip/pip.conf',
-      'echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf';
+  return 'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi';
 } # install_proxy_command
 
 sub new_job () {
@@ -960,15 +955,19 @@ my $Platforms = {
           }
         } # shared dir
         
-        push @$init_commands, sub { return {
-          command => 'perl local/bin/pmbp.pl --install-commands docker',
-          wd => '/app',
-        } };
+        push @$init_commands, sub { return (
+          {proxy => 1},
+          {
+            command => 'perl local/bin/pmbp.pl --install-commands docker',
+            wd => '/app',
+          },
+        ) };
 
         if ($dd->{with_nested}) {
           push @$bcommands,
               q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash';
+              'docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash',
+              {proxy => 1, nested => 1};
 
           push @$cleanup_rules, {name => 'cleanup-nested', commands => []};
           push @{$cleanup_rules->[-1]->{commands}},

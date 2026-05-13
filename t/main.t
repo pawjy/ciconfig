@@ -110,11 +110,7 @@ for (
       steps => [
         'checkout',
         {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
-        {run => {command => "echo \"Acquire::http::Proxy \\\"\$http_proxy\\\";\" > /etc/apt/apt.conf.d/proxy\n" .
-                            "echo \"Acquire::https::Proxy \\\"\$https_proxy\\\";\" >> /etc/apt/apt.conf.d/proxy\n" .
-                            "mkdir -p /root/.config/pip\n" .
-                            "echo \"[global]\" > /root/.config/pip/pip.conf\n" .
-                            "echo \"proxy = \$http_proxy\" >> /root/.config/pip/pip.conf"}},
+        {run => {command => 'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi'}},
         {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
       ],
     }},
@@ -3828,7 +3824,8 @@ for (
         path => '/var/run/docker.sock',
       }],
       commands => [
-        "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
       ],
       when => {branch => []},
     }],
@@ -3856,9 +3853,11 @@ for (
         "mkdir -p /drone/src/local/ciconfig",
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
         q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c if\ \[\ \-n\ \"\$http_proxy\"\ \]\ \|\|\ \[\ \-n\ \"\$https_proxy\"\ \]\;\ then\ \:\ \>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$http_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:http\:\:Proxy\ \\\\\"\$http_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$https_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:https\:\:Proxy\ \\\\\"\$https_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ fi\;\ if\ \[\ \-n\ \"\$http_proxy\"\ \]\;\ then\ mkdir\ \-p\ \/root\/\.config\/pip\;\ echo\ \"\[global\]\"\ \>\ \/root\/\.config\/pip\/pip\.conf\;\ echo\ \"proxy\ \=\ \$http_proxy\"\ \>\>\ \/root\/\.config\/pip\/pip\.conf\;\ fi},
       ],
       when => {branch => []},
     }, {
@@ -3872,6 +3871,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'docker stop `cat /drone/src/local/ciconfig/dockername`',
         'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
@@ -3917,11 +3917,7 @@ for (
       name => 'test--default',
       image => 'quay.io/wakaba/droneci-step-base',
       commands => [
-        "echo \"Acquire::http::Proxy \\\"\$http_proxy\\\";\" > /etc/apt/apt.conf.d/proxy\n" .
-        "echo \"Acquire::https::Proxy \\\"\$https_proxy\\\";\" >> /etc/apt/apt.conf.d/proxy\n" .
-        "mkdir -p /root/.config/pip\n" .
-        "echo \"[global]\" > /root/.config/pip/pip.conf\n" .
-        "echo \"proxy = \$http_proxy\" >> /root/.config/pip/pip.conf"
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi'
       ],
       environment => {
         CIRCLE_NODE_TOTAL => "1",
@@ -3948,7 +3944,8 @@ for (
         path => '/var/run/docker.sock',
       }],
       commands => [
-        "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
       ],
     }, {
       name => 'test--default',
@@ -3958,7 +3955,8 @@ for (
         path => '/var/run/docker.sock',
       }],
       commands => [
-        "bash -c cd\\ \\\\\\/app\\ \\&\\&\\ perl\\ local\\/bin\\/pmbp\\.pl\\ \\-\\-install\\-commands\\ docker",
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
+        'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         "ls",
         "bash -c cd\\ \\\\\\/foo\\ \\&\\&\\ pwd",
         "bash -c cd\\ \\\\\\/bar\\ \\&\\&\\ ab",
@@ -4028,9 +4026,11 @@ for (
         "mkdir -p /drone/src/local/ciconfig",
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c if\ \[\ \-n\ \"\$http_proxy\"\ \]\ \|\|\ \[\ \-n\ \"\$https_proxy\"\ \]\;\ then\ \:\ \>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$http_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:http\:\:Proxy\ \\\\\"\$http_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$https_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:https\:\:Proxy\ \\\\\"\$https_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ fi\;\ if\ \[\ \-n\ \"\$http_proxy\"\ \]\;\ then\ mkdir\ \-p\ \/root\/\.config\/pip\;\ echo\ \"\[global\]\"\ \>\ \/root\/\.config\/pip\/pip\.conf\;\ echo\ \"proxy\ \=\ \$http_proxy\"\ \>\>\ \/root\/\.config\/pip\/pip\.conf\;\ fi}
       ]
     }, {
       name => 'test--default',
@@ -4047,6 +4047,7 @@ for (
         CIRCLE_NODE_INDEX => "0",
       },
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'a\\b',
         'a\\b',
@@ -4072,6 +4073,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'docker stop `cat /drone/src/local/ciconfig/dockername`',
         'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
@@ -4144,9 +4146,11 @@ for (
         "mkdir -p /drone/src/local/ciconfig",
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c if\ \[\ \-n\ \"\$http_proxy\"\ \]\ \|\|\ \[\ \-n\ \"\$https_proxy\"\ \]\;\ then\ \:\ \>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$http_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:http\:\:Proxy\ \\\\\"\$http_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$https_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:https\:\:Proxy\ \\\\\"\$https_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ fi\;\ if\ \[\ \-n\ \"\$http_proxy\"\ \]\;\ then\ mkdir\ \-p\ \/root\/\.config\/pip\;\ echo\ \"\[global\]\"\ \>\ \/root\/\.config\/pip\/pip\.conf\;\ echo\ \"proxy\ \=\ \$http_proxy\"\ \>\>\ \/root\/\.config\/pip\/pip\.conf\;\ fi}
       ]
     }, {
       name => 'test--default',
@@ -4163,6 +4167,7 @@ for (
         CIRCLE_NODE_INDEX => "0",
       },
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'timeout 3 bash -c a\\\\b',
         'timeout 3 bash -c a\\\\b &',
@@ -4188,6 +4193,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'docker stop `cat /drone/src/local/ciconfig/dockername`',
         'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
@@ -4272,9 +4278,11 @@ for (
         "mkdir -p /drone/src/local/ciconfig",
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
         'mkdir -p `cat /drone/src/local/ciconfig/dockershareddir`',
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
-        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash}
+        q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c if\ \[\ \-n\ \"\$http_proxy\"\ \]\ \|\|\ \[\ \-n\ \"\$https_proxy\"\ \]\;\ then\ \:\ \>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$http_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:http\:\:Proxy\ \\\\\"\$http_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$https_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:https\:\:Proxy\ \\\\\"\$https_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ fi\;\ if\ \[\ \-n\ \"\$http_proxy\"\ \]\;\ then\ mkdir\ \-p\ \/root\/\.config\/pip\;\ echo\ \"\[global\]\"\ \>\ \/root\/\.config\/pip\/pip\.conf\;\ echo\ \"proxy\ \=\ \$http_proxy\"\ \>\>\ \/root\/\.config\/pip\/pip\.conf\;\ fi}
       ]
     }, {
       name => 'test--default',
@@ -4291,6 +4299,7 @@ for (
         CIRCLE_NODE_INDEX => "0",
       },
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'a',
       ],
@@ -4306,6 +4315,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'y',
       ],
@@ -4325,6 +4335,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'docker stop `cat /drone/src/local/ciconfig/dockername`',
         'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
@@ -4345,6 +4356,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'x',
       ],
@@ -5046,6 +5058,7 @@ for (
       commands => [
         "mkdir -p /drone/src/local/ciconfig",
         q{perl -e 'print "/var/lib/docker/shareddir/" . rand' > /drone/src/local/ciconfig/dockershareddir},
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/build',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -5054,6 +5067,7 @@ for (
                  "aws --version",
         q{perl -e 'print "ciconfig-" . rand' > /drone/src/local/ciconfig/dockername},
         q{docker run --name `cat /drone/src/local/ciconfig/dockername` -v `cat /drone/src/local/ciconfig/dockershareddir`:`cat /drone/src/local/ciconfig/dockershareddir` -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" -d -t quay.io/wakaba/droneci-step-base bash},
+        q{docker exec -t `cat /drone/src/local/ciconfig/dockername` bash -c if\ \[\ \-n\ \"\$http_proxy\"\ \]\ \|\|\ \[\ \-n\ \"\$https_proxy\"\ \]\;\ then\ \:\ \>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$http_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:http\:\:Proxy\ \\\\\"\$http_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ \[\ \-n\ \"\$https_proxy\"\ \]\ \&\&\ echo\ \"Acquire\:\:https\:\:Proxy\ \\\\\"\$https_proxy\\\\\"\;\"\ \>\>\ \/etc\/apt\/apt\.conf\.d\/proxy\;\ fi\;\ if\ \[\ \-n\ \"\$http_proxy\"\ \]\;\ then\ mkdir\ \-p\ \/root\/\.config\/pip\;\ echo\ \"\[global\]\"\ \>\ \/root\/\.config\/pip\/pip\.conf\;\ echo\ \"proxy\ \=\ \$http_proxy\"\ \>\>\ \/root\/\.config\/pip\/pip\.conf\;\ fi},
         "x",
         'aws s3 sync $CIRCLE_ARTIFACTS s3://ab/f/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build && echo "Artifacts: <x:/$DRONE_REPO/$DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA/build/>"',
       ],
@@ -5078,6 +5092,7 @@ for (
         CIRCLE_NODE_INDEX => "0",
       },
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'export CIRCLE_ARTIFACTS=`cat /drone/src/local/ciconfig/dockershareddir`/artifacts/test--default',
         'mkdir -p $CIRCLE_ARTIFACTS',
@@ -5099,6 +5114,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \"$http_proxy\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'y',
       ],
@@ -5118,6 +5134,7 @@ for (
         path => '/var/lib/docker/shareddir',
       }],
       commands => [
+        'if [ -n "$http_proxy" ] || [ -n "$https_proxy" ]; then : > /etc/apt/apt.conf.d/proxy; [ -n "$http_proxy" ] && echo "Acquire::http::Proxy \\"$http_proxy\\";" >> /etc/apt/apt.conf.d/proxy; [ -n "$https_proxy" ] && echo "Acquire::https::Proxy \\"$https_proxy\\";" >> /etc/apt/apt.conf.d/proxy; fi; if [ -n "$http_proxy" ]; then mkdir -p /root/.config/pip; echo "[global]" > /root/.config/pip/pip.conf; echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf; fi',
         'bash -c cd\ \\\\\/app\ \&\&\ perl\ local\/bin\/pmbp\.pl\ \-\-install\-commands\ docker',
         'docker stop `cat /drone/src/local/ciconfig/dockername`',
         'rm -fr `cat /drone/src/local/ciconfig/dockershareddir`',
