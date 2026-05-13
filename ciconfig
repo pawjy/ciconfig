@@ -2854,6 +2854,15 @@ sub install_awscli_command () {
         "aws --version";
 } # install_awscli_command
 
+sub install_proxy_command () {
+  return join "\n",
+      'echo "Acquire::http::Proxy \"$http_proxy\";" > /etc/apt/apt.conf.d/proxy',
+      'echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy',
+      "mkdir -p /root/.config/pip",
+      'echo "[global]" > /root/.config/pip/pip.conf',
+      'echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf';
+} # install_proxy_command
+
 sub new_job () {
   return {
     ## <https://github.com/circleci/circleci-docs/blob/master/jekyll/_cci2/configuration-reference.md#available-machine-images>
@@ -2871,6 +2880,8 @@ sub circle_step ($;%) {
       if (ref $in->{command} eq 'ARRAY') {
         $in->{command} = join "\n", @{$in->{command}};
       }
+    } elsif (defined delete $in->{proxy}) {
+      $in->{command} = install_proxy_command ();
     } elsif (defined delete $in->{awscli}) {
       $in->{command} = install_awscli_command ();
     } else {
@@ -2990,6 +3001,9 @@ sub droneci_step ($) {
   my ($input) = @_;
   my $outputs = [];
   if (ref $input) {
+    if ($input->{proxy}) {
+      $input->{command} = install_proxy_command;
+    }
     if ($input->{awscli}) {
       $input->{command} = install_awscli_command;
     }
@@ -4860,13 +4874,17 @@ Many options (like C<build>, C<tests>) accept an array of commands. A command ca
     }
   ]
 
-Command objects must have a C<command> key. The only other supported key is:
+Command objects must have a C<command> key. Other supported keys are:
 
 =over 8
 
 =item C<branch>
 
 Restricts the command to run only on the specified branch.
+
+=item C<proxy>
+
+If set to true, installs proxy configuration for C<apt> and C<pip>.
 
 =back
 
@@ -5009,7 +5027,7 @@ Define pipeline steps. Each can be an array of commands or a hash of named jobs.
 
 =item C<docker>
 
-Enables Docker-in-Docker support. An object C<{"nested": true}> creates a more complex setup where steps run inside a dedicated container.
+Enables Docker-in-Docker support. An object C<{"nested": true}> creates a more complex setup where steps run inside a dedicated container. The C<docker run> command for the nested container automatically includes proxy environment variables (C<http_proxy> and C<https_proxy>).
 
 =item C<artifacts>
 
@@ -5017,7 +5035,7 @@ Configures uploading artifacts to an S3 bucket, with options for C<s3_bucket>, C
 
 =item C<node>
 
-Set the C<node> value.
+Adds a C<node> key to the root of the generated F<.drone.yml> with the specified value.
 
 =item C<notification>
 

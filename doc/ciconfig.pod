@@ -66,13 +66,17 @@ Many options (like C<build>, C<tests>) accept an array of commands. A command ca
     }
   ]
 
-Command objects must have a C<command> key. The only other supported key is:
+Command objects must have a C<command> key. Other supported keys are:
 
 =over 8
 
 =item C<branch>
 
 Restricts the command to run only on the specified branch.
+
+=item C<proxy>
+
+If set to true, installs proxy configuration for C<apt> and C<pip>.
 
 =back
 
@@ -215,7 +219,7 @@ Define pipeline steps. Each can be an array of commands or a hash of named jobs.
 
 =item C<docker>
 
-Enables Docker-in-Docker support. An object C<{"nested": true}> creates a more complex setup where steps run inside a dedicated container.
+Enables Docker-in-Docker support. An object C<{"nested": true}> creates a more complex setup where steps run inside a dedicated container. The C<docker run> command for the nested container automatically includes proxy environment variables (C<http_proxy> and C<https_proxy>).
 
 =item C<artifacts>
 
@@ -223,7 +227,7 @@ Configures uploading artifacts to an S3 bucket, with options for C<s3_bucket>, C
 
 =item C<node>
 
-Set the C<node> value.
+Adds a C<node> key to the root of the generated F<.drone.yml> with the specified value.
 
 =item C<notification>
 

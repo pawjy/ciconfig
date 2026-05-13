@@ -102,6 +102,27 @@ for (
     }},
     workflows => {version => 2, build => {jobs => [{'build'=>{}}]}},
   }}}, 'circleci empty'],
+  [{circleci => {tests => [{proxy => 1}]}} => {'.circleci/config.yml' => {json => {
+    version => $circleci_version,
+    jobs => {build => {
+      machine => $machine,
+      environment => {CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/build'},
+      steps => [
+        'checkout',
+        {run => {command => 'mkdir -p $CIRCLE_ARTIFACTS'}},
+        {run => {command => "echo \"Acquire::http::Proxy \\\"\$http_proxy\\\";\" > /etc/apt/apt.conf.d/proxy\n" .
+                            "echo \"Acquire::https::Proxy \\\"\$https_proxy\\\";\" >> /etc/apt/apt.conf.d/proxy\n" .
+                            "mkdir -p /root/.config/pip\n" .
+                            "echo \"[global]\" > /root/.config/pip/pip.conf\n" .
+                            "echo \"proxy = \$http_proxy\" >> /root/.config/pip/pip.conf"}},
+        {store_artifacts => {path => '/tmp/circle-artifacts/build'}},
+      ],
+    }},
+    workflows => {
+      version => 2,
+      build => {jobs => [{'build' => {}}]},
+    },
+  }}}, 'circleci proxy'],
   [{circleci => {'docker-build' => 'abc/def'}} => {'.circleci/config.yml' => {json => {
     version => $circleci_version,
     jobs => {build => {
@@ -3883,6 +3904,32 @@ for (
       when => {branch => []},
     }],
   }}}, 'droneci node'],
+  [{droneci => {tests => [{proxy => 1}]}} => {'.drone.yml' => {json => {
+    kind => 'pipeline',
+    type => 'docker',
+    name => 'default',
+    workspace => {path => '/drone/src'},
+    steps => [{
+      name => 'build',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [],
+    }, {
+      name => 'test--default',
+      image => 'quay.io/wakaba/droneci-step-base',
+      commands => [
+        "echo \"Acquire::http::Proxy \\\"\$http_proxy\\\";\" > /etc/apt/apt.conf.d/proxy\n" .
+        "echo \"Acquire::https::Proxy \\\"\$https_proxy\\\";\" >> /etc/apt/apt.conf.d/proxy\n" .
+        "mkdir -p /root/.config/pip\n" .
+        "echo \"[global]\" > /root/.config/pip/pip.conf\n" .
+        "echo \"proxy = \$http_proxy\" >> /root/.config/pip/pip.conf"
+      ],
+      environment => {
+        CIRCLE_NODE_TOTAL => "1",
+        CIRCLE_NODE_INDEX => "0",
+      },
+      depends_on => [qw(build)],
+    }],
+  }}}, 'droneci proxy'],
   [{droneci => {docker => 1, tests => [
     "ls",
     {command => "pwd", wd => "/foo"},

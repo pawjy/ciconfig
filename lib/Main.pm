@@ -29,6 +29,15 @@ sub install_awscli_command () {
         "aws --version";
 } # install_awscli_command
 
+sub install_proxy_command () {
+  return join "\n",
+      'echo "Acquire::http::Proxy \"$http_proxy\";" > /etc/apt/apt.conf.d/proxy',
+      'echo "Acquire::https::Proxy \"$https_proxy\";" >> /etc/apt/apt.conf.d/proxy',
+      "mkdir -p /root/.config/pip",
+      'echo "[global]" > /root/.config/pip/pip.conf',
+      'echo "proxy = $http_proxy" >> /root/.config/pip/pip.conf';
+} # install_proxy_command
+
 sub new_job () {
   return {
     ## <https://github.com/circleci/circleci-docs/blob/master/jekyll/_cci2/configuration-reference.md#available-machine-images>
@@ -46,6 +55,8 @@ sub circle_step ($;%) {
       if (ref $in->{command} eq 'ARRAY') {
         $in->{command} = join "\n", @{$in->{command}};
       }
+    } elsif (defined delete $in->{proxy}) {
+      $in->{command} = install_proxy_command ();
     } elsif (defined delete $in->{awscli}) {
       $in->{command} = install_awscli_command ();
     } else {
@@ -165,6 +176,9 @@ sub droneci_step ($) {
   my ($input) = @_;
   my $outputs = [];
   if (ref $input) {
+    if ($input->{proxy}) {
+      $input->{command} = install_proxy_command;
+    }
     if ($input->{awscli}) {
       $input->{command} = install_awscli_command;
     }
