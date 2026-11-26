@@ -2375,6 +2375,48 @@ for (
     }},
   }}, '.github/.touch' => {touch => 1}}, 'gaa with build and deploy steps'],
   [{github => {
+    node => 'runnER',
+    gaa => {
+      build => ['foo', 'a b ${{ a.b }}'],
+    },
+    needupdate => ['master'], autobuild => {per_day => 3},
+  }} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}, schedule => [{cron => "17 20,4,12 * * *"}]},
+    jobs => {deploy_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'runnER',
+      steps => [
+        {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/master/dispatches"',
+         env => {GH_ACCESS_TOKEN => q<${{ secrets.GH_ACCESS_TOKEN }}>}},
+      ],
+    }},
+  }}, '.github/workflows/cron.yml' => {json => {
+    name => 'cron',
+    on => {schedule => [{cron => '0 23 * * *'}]},
+    jobs => {batch_github_master => {
+      if => q{${{ github.ref == 'refs/heads/master' }}},
+      'runs-on' => 'runnER',
+      steps => [
+        {
+          "uses" => 'actions/checkout@v2',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {run => 'foo'},
+        {run => 'a b ${{ a.b }}'},
+        {run => 'make updatenightly'},
+        {run => 'git diff-index --quiet HEAD --cached || git commit -m auto'},
+        {run => 'git push origin +`git rev-parse HEAD`:refs/heads/nightly'},
+      ],
+    }},
+  }}, '.github/.touch' => {touch => 1}}, 'runner'],
+  [{github => {
     build => ['b'], tests => ['a'], autobuild => 1,
   }} => {'.github/workflows/test.yml' => {json => {
     name => 'test',

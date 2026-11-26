@@ -499,11 +499,11 @@ my $Platforms = {
         $json->{on}->{push} = {};
         
         my $job = $json->{jobs}->{test} = {
-          'runs-on' => 'ubuntu-latest',
+          'runs-on' => $input->{node} // 'ubuntu-latest',
           steps => [@$build_steps, @$test_steps],
         };
         if ($input->{_with_macos}) {
-          $job->{'runs-on'} = '${{ matrix.os }}';
+          $job->{'runs-on'} = $input->{node} // '${{ matrix.os }}';
         }
 
         if (1) { # artifacts
@@ -600,7 +600,7 @@ my $Platforms = {
 
         my $job = $json->{jobs}->{'deploy_github_' . $branch_name} = {
           if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
-          'runs-on' => 'ubuntu-latest',
+          'runs-on' => $input->{node} // 'ubuntu-latest',
           steps => [map { github_step $_ } @{$input->{_branch_github_deploy_jobs}->{$branch_name} or []}],
         };
 
@@ -656,7 +656,7 @@ my $Platforms = {
 
         my $job = $json->{jobs}->{'batch_github_' . $branch_name} = {
           if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
-          'runs-on' => 'ubuntu-latest',
+          'runs-on' => $input->{node} // 'ubuntu-latest',
           steps => [map { github_step $_ } @{$input->{_branch_github_batch_jobs}->{$branch_name} or []}],
         };
 
@@ -673,7 +673,7 @@ my $Platforms = {
 
         my $job = $json->{jobs}->{'hook_'.$hook_name} = {
           if => q[${{ github.ref == 'refs/heads/master' }}],
-          'runs-on' => 'ubuntu-latest',
+          'runs-on' => $input->{node} // 'ubuntu-latest',
           steps => [map { github_step $_ } @{$input->{_github_hook_jobs}->{$hook_name} or []}],
         };
 
@@ -701,7 +701,7 @@ my $Platforms = {
                 name => 'github-pages',
                 url => '${{ steps.deployment.outputs.page_url }}',
               },
-              'runs-on' => 'ubuntu-latest',
+              'runs-on' => $input->{node} // 'ubuntu-latest',
               steps => [
               ],
             },
@@ -1658,6 +1658,12 @@ $Options->{'droneci', 'artifacts'} = {
   set => sub {
     return unless $_[1];
     $_[0]->{_artifacts} = $_[1];
+  },
+};
+
+$Options->{'github', 'node'} = {
+  set => sub {
+    $_[0]->{node} = $_[1];
   },
 };
 
