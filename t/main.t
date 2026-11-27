@@ -2028,7 +2028,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "nightly",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2049,7 +2049,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "staging",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2075,7 +2075,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "nightly",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2098,7 +2098,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "staging",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2148,7 +2148,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "nightly",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2170,7 +2170,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "staging",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2220,7 +2220,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "nightly",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2242,7 +2242,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "staging",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },
@@ -2256,7 +2256,7 @@ for (
          env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
       ],
     }},
-  }}}],
+  }}}, 'merger.into'],
   [{github => {needupdate => ['test1/test2']}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
     on => {push => {}},
@@ -2376,7 +2376,7 @@ for (
           "uses" => 'actions/checkout@v2',
           "with" => {
             "fetch-depth" => 0,
-            "ref" => "master",
+            "ref" => "fuga",
             "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
           }
         },

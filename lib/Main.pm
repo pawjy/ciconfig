@@ -148,13 +148,14 @@ sub github_step ($) {
   return @output;
 } # github_step
 
-sub github_checkout_steps () {
+sub github_checkout_steps ($) {
+  my $branch_name = $_[0];
   return (
     {
       "uses" => 'actions/checkout@v2',
       "with" => {
         "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
-        "ref" => "master",
+        "ref" => $branch_name,
         "fetch-depth" => 0,
       }
     },
@@ -608,7 +609,7 @@ my $Platforms = {
           push @{$job->{needs} ||= []}, 'test';
         }
 
-        unshift @{$job->{steps}}, github_checkout_steps
+        unshift @{$job->{steps}}, github_checkout_steps $branch_name
             if $input->{_branch_github_deploy_need_checkout}->{$branch_name};
         
         ## <https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idpermissions>
@@ -660,7 +661,7 @@ my $Platforms = {
           steps => [map { github_step $_ } @{$input->{_branch_github_batch_jobs}->{$branch_name} or []}],
         };
 
-        unshift @{$job->{steps}}, github_checkout_steps;
+        unshift @{$job->{steps}}, github_checkout_steps $branch_name;
       }
 
       for my $hook_name (sort { $a cmp $b }
@@ -671,13 +672,14 @@ my $Platforms = {
         push @{$json->{on}->{repository_dispatch}->{types}||=[]},
             $hook_name;
 
+        my $branch_name = 'master';
         my $job = $json->{jobs}->{'hook_'.$hook_name} = {
-          if => q[${{ github.ref == 'refs/heads/master' }}],
+          if => q[${{ github.ref == 'refs/heads/].$branch_name.q[' }}],
           'runs-on' => $input->{node} // 'ubuntu-latest',
           steps => [map { github_step $_ } @{$input->{_github_hook_jobs}->{$hook_name} or []}],
         };
 
-        unshift @{$job->{steps}}, github_checkout_steps;
+        unshift @{$job->{steps}}, github_checkout_steps $branch_name;
       }
 
       if (my $pp = $input->{_github_pages}) {
