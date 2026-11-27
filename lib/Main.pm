@@ -1275,10 +1275,10 @@ $Options->{'github', 'merger'} = {
     for my $branch (qw(staging nightly)) {
       ## <https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables>
       push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
-          {run => 'git fetch --unshallow origin master || git fetch origin master'},
-          {run => 'git checkout master || git checkout -b master origin/master'},
-          {run => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into master" $GITHUB_SHA'},
-          {run => 'git push origin master'};
+          {run => "git fetch --unshallow origin $into || git fetch origin $into"},
+          {run => "git checkout $into || git checkout -b $into origin/$into"},
+          {run => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into '.$into.'" $GITHUB_SHA'},
+          {run => "git push origin $into"};
       for my $repo (@$needs) {
         push @{$json->{_branch_github_deploy_jobs}->{$branch} ||= []},
             {run => 'curl -f -s -S --request POST --header "Authorization:token $GH_ACCESS_TOKEN" --header "Content-Type:application/json" --data-binary "{\"event_type\":\"needupdate\"}" "https://api.github.com/repos/'.$repo.'/dispatches"',

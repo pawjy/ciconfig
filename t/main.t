@@ -2185,6 +2185,78 @@ for (
       ],
     }},
   }}}],
+  [{github => {pmbp => 'latest',
+               merger => {
+                 into => "Fo-a",
+               }}} => {'.github/workflows/test.yml' => {json => {
+    name => 'test',
+    on => {push => {}},
+    jobs => {test => {
+      'runs-on' => 'ubuntu-latest',
+      'continue-on-error' => '${{ matrix.experimental }}',
+      strategy => {matrix => {include => [{perl_version => 'latest',
+                                           experimental => \0}]},
+                   'fail-fast' => \0},
+      env => {'PMBP_PERL_VERSION' => '${{ matrix.perl_version }}',
+              CIRCLE_ARTIFACTS => '/tmp/circle-artifacts/test'},
+      steps => [
+        {uses => 'actions/checkout@v2',
+         "with" => {
+           "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+         }},
+        {run => 'mkdir -p $CIRCLE_ARTIFACTS'},
+        {run => 'make test-deps'},
+        {run => 'make test'},
+        {uses => 'actions/upload-artifact@v4',
+         with => {path => '/tmp/circle-artifacts/test'},
+         if => '${{ always () }}'},
+      ],
+    }, deploy_github_nightly => {
+      if => q{${{ github.ref == 'refs/heads/nightly' }}},
+      'runs-on' => 'ubuntu-latest',
+      needs => ['test'],
+      steps => [
+        {
+          "uses" => 'actions/checkout@v2',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {run => 'git fetch --unshallow origin Fo-a || git fetch origin Fo-a'},
+        {run => 'git checkout Fo-a || git checkout -b Fo-a origin/Fo-a'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into Fo-a" $GITHUB_SHA'},
+        {run => 'git push origin Fo-a'},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
+      ],
+    }, deploy_github_staging => {
+      if => q{${{ github.ref == 'refs/heads/staging' }}},
+      'runs-on' => 'ubuntu-latest',
+      needs => ['test'],
+      steps => [
+        {
+          "uses" => 'actions/checkout@v2',
+          "with" => {
+            "fetch-depth" => 0,
+            "ref" => "master",
+            "ssh-key" => '${{ secrets.GH_GIT_KEY }}',
+          }
+        },
+        {"run" => 'git config --global user.name "GitHub Actions"'},
+        {"run" => 'git config --global user.email "temp@github.test"'},
+        {run => 'git fetch --unshallow origin Fo-a || git fetch origin Fo-a'},
+        {run => 'git checkout Fo-a || git checkout -b Fo-a origin/Fo-a'},
+        {"run" => 'git merge -m "auto-merge $GITHUB_REF ($GITHUB_SHA) into Fo-a" $GITHUB_SHA'},
+        {run => 'git push origin Fo-a'},
+        {run => 'curl -sSf $BWALLER_URL | BWALL_GROUP=merger.${GITHUB_REF/refs\/heads\//} BWALL_NAME=${GITHUB_REPOSITORY} bash',
+         env => {BWALLER_URL => q<${{ secrets.BWALLER_URL }}>}},
+      ],
+    }},
+  }}}],
   [{github => {needupdate => ['test1/test2']}} => {'.github/workflows/test.yml' => {json => {
     name => 'test',
     on => {push => {}},
