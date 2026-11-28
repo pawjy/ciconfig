@@ -20,7 +20,7 @@
     ]
   },
   "github": {
-    "pmbp": "5.14+",
+    "pmbp": "latest",
     "merger": true,
     "gaa": true
   },

@@ -9,7 +9,7 @@ See |doc/ciconfig.pod|.
 
 * Dependency
 
-Perl 5.14 or later is required.
+A recent version of Perl 5 is required.
 
 * Author
 
